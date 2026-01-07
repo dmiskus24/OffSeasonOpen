@@ -1030,6 +1030,8 @@
   }
 
   let state = loadState();
+  let editingWeekId = null; // null = creating new week, not editing
+
 
   function getActiveSeasonId() {
     if (!state.seasons || !state.seasons.length) {
@@ -1494,6 +1496,34 @@
   }
 
   // ----- Rendering: Weeks -----
+  function startEditWeek(weekId) {
+  const week = state.weeks.find(w => w.id === weekId);
+  if (!week) return;
+
+  editingWeekId = weekId;
+
+  const dateInput = document.getElementById('week-date');
+  const courseInput = document.getElementById('week-course');
+  const hostSelect = document.getElementById('week-host');
+  const longInput = document.getElementById('week-long-hole');
+  const closestInput = document.getElementById('week-closest-hole');
+  const submitBtn = document.querySelector('#week-form button[type="submit"]');
+
+  if (dateInput) dateInput.value = week.date || '';
+  if (courseInput) courseInput.value = week.course || '';
+  if (hostSelect && week.host) hostSelect.value = week.host;
+  if (longInput) longInput.value = week.longHole || '';
+  if (closestInput) closestInput.value = week.closestHole || '';
+  if (submitBtn) submitBtn.textContent = 'Update week';
+
+  // Switch to Weeks tab & scroll to the form
+  document.querySelector('.tab-btn[data-view="weeks-view"]')?.click();
+  document.getElementById('weeks-view')?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+}
+
   function renderWeeksList() {
     const container = document.getElementById('weeks-list-container');
     const weeksInSeason = getWeeksForActiveSeason();
@@ -1613,13 +1643,16 @@
             </table>
           </div>
           <div class="week-footer">
-            <span>
-              LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
-              CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
-            </span>
-            <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
-          </div>
-        </div>
+  <span>
+    LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
+    CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
+  </span>
+  <div>
+    <button class="btn btn-sm btn-ghost" data-edit-week="${week.id}">Edit</button>
+    <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
+  </div>
+</div>
+
       `;
     }
 
@@ -1636,6 +1669,12 @@
       });
     });
   }
+container.querySelectorAll('[data-edit-week]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const id = btn.getAttribute('data-edit-week');
+    startEditWeek(id);
+  });
+});
 
   // ----- Scores editor (per week, per season) -----
   function renderScoresSection() {
@@ -1865,6 +1904,7 @@
     const form = document.getElementById('week-form');
     const clearBtn = document.getElementById('clear-week-form-btn');
     const hostSelect = document.getElementById('week-host');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     function refreshHosts() {
       if (!state.players.length) {
@@ -1882,11 +1922,15 @@
     refreshHosts();
 
     clearBtn.addEventListener('click', () => {
-      form.reset();
-      const errorEl = document.getElementById('week-form-error');
-      errorEl.style.display = 'none';
-      errorEl.textContent = '';
-    });
+  form.reset();
+  const errorEl = document.getElementById('week-form-error');
+  errorEl.style.display = 'none';
+  errorEl.textContent = '';
+
+  editingWeekId = null;
+  if (submitBtn) submitBtn.textContent = 'Save week';
+});
+
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1923,42 +1967,65 @@
         return;
       }
 
-      let coursePhoto = null;
-      if (coursePhotoInput && coursePhotoInput.files && coursePhotoInput.files[0]) {
-        try {
-          coursePhoto = await readFileAsDataURL(coursePhotoInput.files[0]);
-        } catch (err) {
-          console.error('Error reading course photo', err);
-          errorEl.textContent = 'Failed to read course photo. Try again or leave it blank.';
-          errorEl.style.display = 'block';
-          return;
-        }
-      }
-
-      const newWeek = {
-        id: uid(),
-        seasonId: getActiveSeasonId(),
-        date,
-        course,
-        host,
-        longHole,
-        closestHole,
-        coursePhoto: coursePhoto,
-        longDriveWinner: null,
-        closestWinner: null,
-        results: []
-      };
-
-      state.weeks.push(newWeek);
-      saveState();
-      refreshAll();
-
-      form.reset();
-      alert('Week created for this season. Now go to "Enter / Update Scores" to log results.');
-    });
-
-    setupWeekForm.refreshHosts = refreshHosts;
+       let coursePhoto = null;
+  if (coursePhotoInput && coursePhotoInput.files && coursePhotoInput.files[0]) {
+    try {
+      coursePhoto = await readFileAsDataURL(coursePhotoInput.files[0]);
+    } catch (err) {
+      console.error('Error reading course photo', err);
+      errorEl.textContent = 'Failed to read course photo. Try again or leave it blank.';
+      errorEl.style.display = 'block';
+      return;
+    }
   }
+
+  const isEditing = !!editingWeekId;
+
+  if (isEditing) {
+    // Update existing week
+    const week = state.weeks.find(w => w.id === editingWeekId);
+    if (week) {
+      week.date = date;
+      week.course = course;
+      week.host = host;
+      week.longHole = longHole;
+      week.closestHole = closestHole;
+      // Only overwrite photo if a new one is chosen
+      if (coursePhoto !== null) {
+        week.coursePhoto = coursePhoto;
+      }
+    }
+  } else {
+    // Create new week
+    const newWeek = {
+      id: uid(),
+      seasonId: getActiveSeasonId(),
+      date,
+      course,
+      host,
+      longHole,
+      closestHole,
+      coursePhoto: coursePhoto,
+      longDriveWinner: null,
+      closestWinner: null,
+      results: []
+    };
+    state.weeks.push(newWeek);
+  }
+
+  saveState();
+  refreshAll();
+
+  form.reset();
+  editingWeekId = null;
+  if (submitBtn) submitBtn.textContent = 'Save week';
+
+  alert(
+    isEditing
+      ? 'Week updated.'
+      : 'Week created for this season. Now go to "Enter / Update Scores" to log results.'
+  );
+});
 
   // ----- Scores form handling -----
   function setupScoresForm() {
@@ -2272,6 +2339,7 @@
   </script>
 </body>
 </html>
+
 
 
 
