@@ -1250,6 +1250,41 @@
     return name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   }
 
+  function renamePlayer(oldName, newName) {
+  if (!newName || oldName === newName) return;
+
+  // Update players array
+  state.players = state.players.map(p => (p === oldName ? newName : p));
+
+  // Update all weeks
+  state.weeks.forEach(week => {
+    // Host name
+    if (week.host === oldName) {
+      week.host = newName;
+    }
+
+    // Results array (player names)
+    if (Array.isArray(week.results)) {
+      week.results.forEach(r => {
+        if (r.player === oldName) {
+          r.player = newName;
+        }
+      });
+    }
+
+    // LD / CTP winners stored on the week
+    if (week.longDriveWinner === oldName) {
+      week.longDriveWinner = newName;
+    }
+    if (week.closestWinner === oldName) {
+      week.closestWinner = newName;
+    }
+  });
+
+  saveState();
+  refreshAll();
+}
+    
   function positionSuffix(n) {
     if (n === 1) return 'st';
     if (n === 2) return 'nd';
@@ -1833,39 +1868,60 @@
   }
 
   // ----- Rendering: Players & scoring -----
-  function renderPlayersList() {
-    const list = document.getElementById('players-list');
-    const headerPlayersCount = document.getElementById('header-players-count');
-    headerPlayersCount.textContent = state.players.length;
+ function renderPlayersList() {
+  const list = document.getElementById('players-list');
+  const headerPlayersCount = document.getElementById('header-players-count');
+  headerPlayersCount.textContent = state.players.length;
 
-    if (!state.players.length) {
-      list.innerHTML = '<div class="empty-state">No players yet. Add your crew above.</div>';
-      return;
-    }
-
-    let html = '';
-    for (const p of state.players) {
-      html += `
-        <span class="pill-tag">
-          ${p}
-          <button type="button" data-remove-player="${p}">×</button>
-        </span>
-      `;
-    }
-    list.innerHTML = html;
-
-    list.querySelectorAll('[data-remove-player]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const name = btn.getAttribute('data-remove-player');
-        if (!confirm("Remove " + name + " from the league? Past results for them will stay.")) {
-          return;
-        }
-        state.players = state.players.filter(p => p !== name);
-        saveState();
-        refreshAll();
-      });
-    });
+  if (!state.players.length) {
+    list.innerHTML = '<div class="empty-state">No players yet. Add your crew above.</div>';
+    return;
   }
+
+  let html = '';
+  for (const p of state.players) {
+    html += `
+      <span class="pill-tag">
+        ${p}
+        <button type="button" data-edit-player="${p}">Edit</button>
+        <button type="button" data-remove-player="${p}">×</button>
+      </span>
+    `;
+  }
+  list.innerHTML = html;
+
+  // Remove player
+  list.querySelectorAll('[data-remove-player]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const name = btn.getAttribute('data-remove-player');
+      if (!confirm("Remove " + name + " from the league? Past results for them will stay (under their old name).")) {
+        return;
+      }
+      state.players = state.players.filter(p => p !== name);
+      saveState();
+      refreshAll();
+    });
+  });
+
+  // Edit player
+  list.querySelectorAll('[data-edit-player]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const oldName = btn.getAttribute('data-edit-player');
+      const newName = prompt('Edit player name:', oldName);
+      if (newName === null) return; // user hit cancel
+
+      const trimmed = newName.trim();
+      if (!trimmed) return;
+
+      if (trimmed !== oldName && state.players.includes(trimmed)) {
+        alert('That name already exists. Choose a different one.');
+        return;
+      }
+
+      renamePlayer(oldName, trimmed);
+    });
+  });
+}
 
   function renderScoringSettings() {
     document.getElementById('score-1st').value = state.scoring.placementPoints[1] ?? '';
@@ -2344,6 +2400,7 @@
   </script>
 </body>
 </html>
+
 
 
 
