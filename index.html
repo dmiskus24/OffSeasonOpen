@@ -834,13 +834,32 @@
         <!-- Settings View -->
         <section id="settings-view" class="view">
           <div class="card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">Players & Scoring</div>
-                <div class="card-subtitle">Set your crew and how points are awarded.</div>
-              </div>
-              <span class="pill">Only stored in your browser</span>
-            </div>
+  <div class="card-header">
+    <div>
+      <div class="card-title">Players & Scoring</div>
+      <div class="card-subtitle">Set your crew and how points are awarded.</div>
+    </div>
+    <span class="pill">Only stored in your browser</span>
+  </div>
+
+  <!-- 🔽 NEW: Season controls -->
+  <div class="field-group">
+    <label for="season-select">Season</label>
+    <div class="inline">
+      <select id="season-select"></select>
+      <button class="btn btn-primary btn-sm" type="button" id="add-season-btn">New season</button>
+      <button class="btn btn-ghost btn-sm" type="button" id="rename-season-btn">Rename</button>
+      <button class="btn btn-danger btn-sm" type="button" id="delete-season-btn">Delete</button>
+    </div>
+    <div class="settings-hint">
+      Each season has its own weeks & leaderboard. Player list is shared across all seasons.
+    </div>
+  </div>
+  <!-- 🔼 NEW -->
+
+  <div class="settings-grid">
+    <!-- Players -->
+
 
             <div class="settings-grid">
               <!-- Players -->
@@ -2244,6 +2263,7 @@
 </script>
 </body>
 </html>
+
 
 
 
