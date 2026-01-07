@@ -1525,156 +1525,160 @@
 }
 
   function renderWeeksList() {
-    const container = document.getElementById('weeks-list-container');
-    const weeksInSeason = getWeeksForActiveSeason();
+  const container = document.getElementById('weeks-list-container');
+  const weeksInSeason = getWeeksForActiveSeason();
 
-    if (!weeksInSeason.length) {
-      container.innerHTML = '<div class="empty-state">No weeks recorded yet in this season. Create a week above to start your tour.</div>';
-      return;
-    }
-
-    const weeksSorted = [...weeksInSeason].sort((a, b) => {
-      if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
-      return (b.date || '').localeCompare(a.date || '');
-    });
-
-    let html = '<div class="weeks-list">';
-
-    for (const week of weeksSorted) {
-      const playedCount = (week.results || []).filter(r => r.played).length;
-      const weekLabel = week.date ? formatWeekRange(week.date) : 'No date';
-      const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
-      const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
-
-      const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
-      const ldWinner = longWinnerName || week.longDriveWinner || null;
-      const ctpWinner = closestWinnerName || week.closestWinner || null;
-
-      let ldDistDisplay = '—';
-      let ctpDistDisplay = '—';
-      if (ldWinner) {
-        const r = (week.results || []).find(x => x.player === ldWinner);
-        if (r && typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
-          ldDistDisplay = `${r.longDriveDistance.toFixed(1)} yd`;
-        }
-      }
-      if (ctpWinner) {
-        const r = (week.results || []).find(x => x.player === ctpWinner);
-        if (r && typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
-          ctpDistDisplay = formatFeetInches(r.closestDistance);
-        }
-      }
-
-      html += `
-        <div class="week-card">
-          <div class="week-header-line">
-            <div class="week-main-info">
-              <span class="week-course">${week.course || 'Unknown course'}</span>
-              <span class="week-meta">• Week of ${weekLabel}</span>
-              <span class="week-meta">• Host: ${week.host || '—'}</span>
-            </div>
-            <div class="week-pills">
-              <span class="pill">${playedCount} played</span>
-              <span class="pill pill-accent">${longLabel}</span>
-              <span class="pill pill-accent">${closestLabel}</span>
-            </div>
-          </div>
-          <div class="week-body">
-      `;
-
-      if (week.coursePhoto) {
-        html += `
-          <small>Course settings photo:</small>
-          <div class="course-photo-thumb">
-            <img src="${week.coursePhoto}" alt="Course settings photo" />
-          </div>
-        `;
-      } else {
-        html += `<small>No course settings photo uploaded.</small>`;
-      }
-
-      html += `
-            <table>
-              <thead>
-                <tr>
-                  <th>Player</th>
-                  <th>Score</th>
-                  <th>Finish</th>
-                  <th>Played</th>
-                  <th>LD (yd)</th>
-                  <th>CTP</th>
-                  <th>Card</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
-
-      const byName = [...(week.results || [])].sort((a, b) => a.player.localeCompare(b.player));
-
-      for (const r of byName) {
-        const pos = r.position ? `${r.position}${positionSuffix(r.position)}` : '—';
-        const scoreDisplay = (typeof r.strokes === 'number' && !isNaN(r.strokes)) ? r.strokes : '—';
-        const ldDisplay = (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance))
-          ? `${r.longDriveDistance.toFixed(1)}`
-          : '—';
-        const ctpDisplay = (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance))
-          ? formatFeetInches(r.closestDistance)
-          : '—';
-        const hasCard = !!r.scorecardImage;
-        const cardCell = hasCard
-          ? `<a href="${r.scorecardImage}" target="_blank">View</a>`
-          : '—';
-
-        html += `
-          <tr>
-            <td>${r.player}</td>
-            <td>${scoreDisplay}</td>
-            <td>${pos}</td>
-            <td>${r.played ? 'Yes' : 'No'}</td>
-            <td>${ldDisplay}</td>
-            <td>${ctpDisplay}</td>
-            <td>${cardCell}</td>
-          </tr>
-        `;
-      }
-
-      html += `
-              </tbody>
-            </table>
-          </div>
-          <div class="week-footer">
-  <span>
-    LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
-    CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
-  </span>
-  <div>
-    <button class="btn btn-sm btn-ghost" data-edit-week="${week.id}">Edit</button>
-    <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
-  </div>
-</div>
-
-      `;
-    }
-
-    html += '</div>';
-    container.innerHTML = html;
-
-    container.querySelectorAll('[data-delete-week]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-delete-week');
-        if (!confirm("Delete this week from the log?")) return;
-        state.weeks = state.weeks.filter(w => w.id !== id);
-        saveState();
-        refreshAll();
-      });
-    });
+  if (!weeksInSeason.length) {
+    container.innerHTML = '<div class="empty-state">No weeks recorded yet in this season. Create a week above to start your tour.</div>';
+    return;
   }
-container.querySelectorAll('[data-edit-week]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const id = btn.getAttribute('data-edit-week');
-    startEditWeek(id);
+
+  const weeksSorted = [...weeksInSeason].sort((a, b) => {
+    if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
+    return (b.date || '').localeCompare(a.date || '');
   });
-});
+
+  let html = '<div class="weeks-list">';
+
+  for (const week of weeksSorted) {
+    const playedCount = (week.results || []).filter(r => r.played).length;
+    const weekLabel = week.date ? formatWeekRange(week.date) : 'No date';
+    const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
+    const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
+
+    const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
+    const ldWinner = longWinnerName || week.longDriveWinner || null;
+    const ctpWinner = closestWinnerName || week.closestWinner || null;
+
+    let ldDistDisplay = '—';
+    let ctpDistDisplay = '—';
+    if (ldWinner) {
+      const r = (week.results || []).find(x => x.player === ldWinner);
+      if (r && typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
+        ldDistDisplay = `${r.longDriveDistance.toFixed(1)} yd`;
+      }
+    }
+    if (ctpWinner) {
+      const r = (week.results || []).find(x => x.player === ctpWinner);
+      if (r && typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
+        ctpDistDisplay = formatFeetInches(r.closestDistance);
+      }
+    }
+
+    html += `
+      <div class="week-card">
+        <div class="week-header-line">
+          <div class="week-main-info">
+            <span class="week-course">${week.course || 'Unknown course'}</span>
+            <span class="week-meta">• Week of ${weekLabel}</span>
+            <span class="week-meta">• Host: ${week.host || '—'}</span>
+          </div>
+          <div class="week-pills">
+            <span class="pill">${playedCount} played</span>
+            <span class="pill pill-accent">${longLabel}</span>
+            <span class="pill pill-accent">${closestLabel}</span>
+          </div>
+        </div>
+        <div class="week-body">
+    `;
+
+    if (week.coursePhoto) {
+      html += `
+        <small>Course settings photo:</small>
+        <div class="course-photo-thumb">
+          <img src="${week.coursePhoto}" alt="Course settings photo" />
+        </div>
+      `;
+    } else {
+      html += `<small>No course settings photo uploaded.</small>`;
+    }
+
+    html += `
+          <table>
+            <thead>
+              <tr>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Finish</th>
+                <th>Played</th>
+                <th>LD (yd)</th>
+                <th>CTP</th>
+                <th>Card</th>
+              </tr>
+            </thead>
+            <tbody>
+    `;
+
+    const byName = [...(week.results || [])].sort((a, b) => a.player.localeCompare(b.player));
+
+    for (const r of byName) {
+      const pos = r.position ? `${r.position}${positionSuffix(r.position)}` : '—';
+      const scoreDisplay = (typeof r.strokes === 'number' && !isNaN(r.strokes)) ? r.strokes : '—';
+      const ldDisplay = (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance))
+        ? `${r.longDriveDistance.toFixed(1)}`
+        : '—';
+      const ctpDisplay = (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance))
+        ? formatFeetInches(r.closestDistance)
+        : '—';
+      const hasCard = !!r.scorecardImage;
+      const cardCell = hasCard
+        ? `<a href="${r.scorecardImage}" target="_blank">View</a>`
+        : '—';
+
+      html += `
+        <tr>
+          <td>${r.player}</td>
+          <td>${scoreDisplay}</td>
+          <td>${pos}</td>
+          <td>${r.played ? 'Yes' : 'No'}</td>
+          <td>${ldDisplay}</td>
+          <td>${ctpDisplay}</td>
+          <td>${cardCell}</td>
+        </tr>
+      `;
+    }
+
+    html += `
+            </tbody>
+          </table>
+        </div>
+        <div class="week-footer">
+          <span>
+            LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
+            CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
+          </span>
+          <div>
+            <button class="btn btn-sm btn-ghost" data-edit-week="${week.id}">Edit</button>
+            <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Hook up delete buttons
+  container.querySelectorAll('[data-delete-week]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-delete-week');
+      if (!confirm("Delete this week from the log?")) return;
+      state.weeks = state.weeks.filter(w => w.id !== id);
+      saveState();
+      refreshAll();
+    });
+  });
+
+  // Hook up edit buttons
+  container.querySelectorAll('[data-edit-week]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.getAttribute('data-edit-week');
+      startEditWeek(id);
+    });
+  });
+}
+
 
   // ----- Scores editor (per week, per season) -----
   function renderScoresSection() {
@@ -2026,6 +2030,7 @@ container.querySelectorAll('[data-edit-week]').forEach(btn => {
       : 'Week created for this season. Now go to "Enter / Update Scores" to log results.'
   );
 });
+  }
 
   // ----- Scores form handling -----
   function setupScoresForm() {
@@ -2339,6 +2344,7 @@ container.querySelectorAll('[data-edit-week]').forEach(btn => {
   </script>
 </body>
 </html>
+
 
 
 
