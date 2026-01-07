@@ -594,6 +594,32 @@
       margin: 6px 0;
       border-radius: 999px;
     }
+
+    /* Simple button styling (so the new buttons look decent) */
+    .btn {
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      background: rgba(8,16,25,0.9);
+      color: var(--text-main);
+      cursor: pointer;
+    }
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 0.75rem;
+    }
+    .btn-primary {
+      background: var(--accent-strong);
+      border-color: rgba(64,196,99,0.9);
+    }
+    .btn-ghost {
+      background: transparent;
+    }
+    .btn-danger {
+      background: #802525;
+      border-color: #ff5e5e;
+    }
   </style>
 </head>
 <body>
@@ -623,6 +649,7 @@
         </div>
       </div>
     </header>
+
     <!-- Auth Bar -->
     <div class="auth-bar" style="padding:8px 22px 0; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:0.8rem;">
       <div id="auth-status" style="color:#9aa9bd;">
@@ -634,6 +661,7 @@
         <button id="signout-btn" class="btn btn-ghost btn-sm" style="display:none;">Sign out</button>
       </div>
     </div>
+
     <main>
       <div class="tabs">
         <button class="tab-btn active" data-view="leaderboard-view">
@@ -678,15 +706,13 @@
 
             <div class="subtle-separator"></div>
 
-            <div id="leaderboard-table-container">
-              <!-- Table rendered via JS -->
-            </div>
+            <div id="leaderboard-table-container"></div>
           </div>
         </section>
 
         <!-- Weeks View -->
         <section id="weeks-view" class="view">
-          <!-- Create week (course + settings) -->
+          <!-- Create week -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -713,9 +739,7 @@
 
                   <div class="field-group">
                     <label for="week-host">Host (picked course/settings)</label>
-                    <select id="week-host" required>
-                      <!-- options via JS -->
-                    </select>
+                    <select id="week-host" required></select>
                   </div>
 
                   <div class="field-group inline">
@@ -767,7 +791,7 @@
             </form>
           </div>
 
-          <!-- Enter / update scores for a week -->
+          <!-- Enter / update scores -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -782,9 +806,7 @@
             <form id="scores-form">
               <div class="field-group">
                 <label for="scores-week-select">Select week</label>
-                <select id="scores-week-select">
-                  <!-- options via JS -->
-                </select>
+                <select id="scores-week-select"></select>
                 <div class="settings-hint">
                   Players can play on <strong>any day</strong> of this week. You’re just attaching their results.
                 </div>
@@ -799,9 +821,7 @@
                     <li><strong>CTP (ft + in)</strong> → system finds the shortest (min) distance (converted to inches) and awards CTP points</li>
                   </ul>
                 </div>
-                <div id="scores-player-results-wrapper">
-                  <!-- table via JS -->
-                </div>
+                <div id="scores-player-results-wrapper"></div>
               </div>
 
               <div class="subtle-separator"></div>
@@ -820,46 +840,39 @@
             <div class="card-header">
               <div>
                 <div class="card-title">Weeks Log</div>
-                <div class="card-subtitle">History of every sim week (most recent first).</div>
+                <div class="card-subtitle">History of every sim week (most recent first) for this season.</div>
               </div>
               <span class="pill">Week-of view</span>
             </div>
 
-            <div id="weeks-list-container">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="weeks-list-container"></div>
           </div>
         </section>
 
         <!-- Settings View -->
         <section id="settings-view" class="view">
           <div class="card">
-  <div class="card-header">
-    <div>
-      <div class="card-title">Players & Scoring</div>
-      <div class="card-subtitle">Set your crew and how points are awarded.</div>
-    </div>
-    <span class="pill">Only stored in your browser</span>
-  </div>
+            <div class="card-header">
+              <div>
+                <div class="card-title">Players, Scoring & Seasons</div>
+                <div class="card-subtitle">Set your crew, scoring, and manage seasons.</div>
+              </div>
+              <span class="pill">Stored locally / Firebase</span>
+            </div>
 
-  <!-- 🔽 NEW: Season controls -->
-  <div class="field-group">
-    <label for="season-select">Season</label>
-    <div class="inline">
-      <select id="season-select"></select>
-      <button class="btn btn-primary btn-sm" type="button" id="add-season-btn">New season</button>
-      <button class="btn btn-ghost btn-sm" type="button" id="rename-season-btn">Rename</button>
-      <button class="btn btn-danger btn-sm" type="button" id="delete-season-btn">Delete</button>
-    </div>
-    <div class="settings-hint">
-      Each season has its own weeks & leaderboard. Player list is shared across all seasons.
-    </div>
-  </div>
-  <!-- 🔼 NEW -->
-
-  <div class="settings-grid">
-    <!-- Players -->
-
+            <!-- Season controls -->
+            <div class="field-group">
+              <label for="season-select">Season</label>
+              <div class="inline">
+                <select id="season-select"></select>
+                <button class="btn btn-primary btn-sm" type="button" id="add-season-btn">New season</button>
+                <button class="btn btn-ghost btn-sm" type="button" id="rename-season-btn">Rename</button>
+                <button class="btn btn-danger btn-sm" type="button" id="delete-season-btn">Delete</button>
+              </div>
+              <div class="settings-hint">
+                Each season has its own weeks & leaderboard. Player list is shared across all seasons.
+              </div>
+            </div>
 
             <div class="settings-grid">
               <!-- Players -->
@@ -875,9 +888,7 @@
 
                 <div class="field-group">
                   <label>Current players</label>
-                  <div id="players-list">
-                    <!-- chips -->
-                  </div>
+                  <div id="players-list"></div>
                   <div class="settings-hint">
                     These appear in hosts, score entry, and LD/CTP auto calcs.
                   </div>
@@ -934,7 +945,8 @@
                 </div>
 
                 <div class="settings-hint">
-                  Default scoring: 1st = 5 pts, 2nd = 3 pts, 3rd = 2 pts, 4th = 1 pt, plus 1 for playing, 1 each for LD & CTP.
+                  Default scoring: 1st = 5 pts, 2nd = 3 pts, 3rd = 2 pts, 4th = 1 pt,
+                  plus 1 for playing, 1 each for LD & CTP.
                 </div>
               </div>
             </div>
@@ -944,7 +956,7 @@
     </main>
   </div>
 
- <script>
+  <script>
   // ----- Data model & persistence (local + seasons) -----
   const STORAGE_KEY = 'offseason_golf_league_v2';
 
@@ -999,7 +1011,7 @@
     const rawWeeks = Array.isArray(parsed.weeks) ? parsed.weeks : [];
     const weeks = rawWeeks.map(w => ({
       ...w,
-      seasonId: w.seasonId || activeSeasonId // old data => all weeks go to current season
+      seasonId: w.seasonId || activeSeasonId // old data => put into current season
     }));
 
     return { players, weeks, scoring, seasons, activeSeasonId };
@@ -1047,11 +1059,9 @@
   let currentUser = null;
   let leagueListenerRef = null;
 
-  // Choose a league id so all your buddies share the same data
   const LEAGUE_ID = 'defaultLeague';
 
   function initFirebase() {
-    // your existing config (kept exactly as you had it)
     const firebaseConfig = {
       apiKey: "AIzaSyCTcxkTuBfXhAKkx1PHa-xKjKmo0QM7FC4",
       authDomain: "offseasonopen.firebaseapp.com",
@@ -1097,7 +1107,7 @@
     }
 
     if (!currentUser) {
-      // Not signed in: just use local state
+      // Not signed in: use local state only
       return;
     }
 
@@ -1109,7 +1119,6 @@
         saveStateLocal();
         refreshAll();
       } else {
-        // No data yet – push our current state
         saveStateToFirebase();
       }
     });
@@ -1780,7 +1789,7 @@
     wrapper.innerHTML = tableHtml;
   }
 
-  // ----- Rendering: Settings (players & scoring) -----
+  // ----- Rendering: Players & scoring -----
   function renderPlayersList() {
     const list = document.getElementById('players-list');
     const headerPlayersCount = document.getElementById('header-players-count');
@@ -1851,7 +1860,7 @@
     document.getElementById('header-players-count').textContent = state.players.length;
   }
 
-  // ----- Week form handling (create week) -----
+  // ----- Week form handling -----
   function setupWeekForm() {
     const form = document.getElementById('week-form');
     const clearBtn = document.getElementById('clear-week-form-btn');
@@ -2260,9 +2269,10 @@
     initFirebase();
     refreshAll();
   });
-</script>
+  </script>
 </body>
 </html>
+
 
 
 
