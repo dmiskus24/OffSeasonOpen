@@ -925,41 +925,73 @@
     </main>
   </div>
 
-  <script>
-  // ----- Data model & persistence (local) -----
-  const STORAGE_KEY = 'offseason_golf_league_v1';
+ <script>
+  // ----- Data model & persistence (local + seasons) -----
+  const STORAGE_KEY = 'offseason_golf_league_v2';
+
+  const defaultScoring = {
+    placementPoints: { 1: 5, 2: 3, 3: 2, 4: 1 },
+    participation: 1,
+    longDrive: 1,
+    closestToPin: 1
+  };
 
   const defaultState = {
     players: [],
-    weeks: [],
-    scoring: {
-      placementPoints: { 1: 5, 2: 3, 3: 2, 4: 1 },
-      participation: 1,
-      longDrive: 1,
-      closestToPin: 1
-    }
+    weeks: [], // each week gets seasonId
+    scoring: structuredClone(defaultScoring),
+    seasons: [
+      { id: 'season1', name: 'Season 1' }
+    ],
+    activeSeasonId: 'season1'
   };
+
+  function normalizeState(parsed) {
+    if (!parsed || typeof parsed !== 'object') {
+      return structuredClone(defaultState);
+    }
+
+    const players = Array.isArray(parsed.players) ? parsed.players : [];
+
+    const scoring = {
+      placementPoints: {
+        1: parsed?.scoring?.placementPoints?.[1] ?? defaultScoring.placementPoints[1],
+        2: parsed?.scoring?.placementPoints?.[2] ?? defaultScoring.placementPoints[2],
+        3: parsed?.scoring?.placementPoints?.[3] ?? defaultScoring.placementPoints[3],
+        4: parsed?.scoring?.placementPoints?.[4] ?? defaultScoring.placementPoints[4]
+      },
+      participation: parsed?.scoring?.participation ?? defaultScoring.participation,
+      longDrive: parsed?.scoring?.longDrive ?? defaultScoring.longDrive,
+      closestToPin: parsed?.scoring?.closestToPin ?? defaultScoring.closestToPin
+    };
+
+    let seasons = Array.isArray(parsed.seasons) && parsed.seasons.length
+      ? parsed.seasons.map((s, idx) => ({
+          id: s.id || `season${idx + 1}`,
+          name: s.name || `Season ${idx + 1}`
+        }))
+      : [{ id: 'season1', name: 'Season 1' }];
+
+    let activeSeasonId =
+      parsed.activeSeasonId && seasons.some(s => s.id === parsed.activeSeasonId)
+        ? parsed.activeSeasonId
+        : seasons[0].id;
+
+    const rawWeeks = Array.isArray(parsed.weeks) ? parsed.weeks : [];
+    const weeks = rawWeeks.map(w => ({
+      ...w,
+      seasonId: w.seasonId || activeSeasonId // old data => all weeks go to current season
+    }));
+
+    return { players, weeks, scoring, seasons, activeSeasonId };
+  }
 
   function loadState() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return structuredClone(defaultState);
       const parsed = JSON.parse(raw);
-      return {
-        players: parsed.players || [],
-        weeks: parsed.weeks || [],
-        scoring: {
-          placementPoints: {
-            1: parsed?.scoring?.placementPoints?.[1] ?? 5,
-            2: parsed?.scoring?.placementPoints?.[2] ?? 3,
-            3: parsed?.scoring?.placementPoints?.[3] ?? 2,
-            4: parsed?.scoring?.placementPoints?.[4] ?? 1
-          },
-          participation: parsed?.scoring?.participation ?? 1,
-          longDrive: parsed?.scoring?.longDrive ?? 1,
-          closestToPin: parsed?.scoring?.closestToPin ?? 1
-        }
-      };
+      return normalizeState(parsed);
     } catch (e) {
       console.error('Failed to load state, resetting.', e);
       return structuredClone(defaultState);
@@ -967,6 +999,22 @@
   }
 
   let state = loadState();
+
+  function getActiveSeasonId() {
+    if (!state.seasons || !state.seasons.length) {
+      state.seasons = [{ id: 'season1', name: 'Season 1' }];
+      state.activeSeasonId = 'season1';
+    }
+    if (!state.activeSeasonId || !state.seasons.some(s => s.id === state.activeSeasonId)) {
+      state.activeSeasonId = state.seasons[0].id;
+    }
+    return state.activeSeasonId;
+  }
+
+  function getWeeksForActiveSeason() {
+    const id = getActiveSeasonId();
+    return state.weeks.filter(w => w.seasonId === id);
+  }
 
   function saveStateLocal() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -984,17 +1032,17 @@
   const LEAGUE_ID = 'defaultLeague';
 
   function initFirebase() {
-    // ⬇️ Replace this config with YOUR Firebase project's config from the Firebase console
-  const firebaseConfig = {
-  apiKey: "AIzaSyCTcxkTuBfXhAKkx1PHa-xKjKmo0QM7FC4",
-  authDomain: "offseasonopen.firebaseapp.com",
-  databaseURL: "https://offseasonopen-default-rtdb.firebaseio.com",
-  projectId: "offseasonopen",
-  storageBucket: "offseasonopen.firebasestorage.app",
-  messagingSenderId: "213022712394",
-  appId: "1:213022712394:web:697fd75037b51728f6bcb3",
-  measurementId: "G-EJY4QY9WJ8"
-};
+    // your existing config (kept exactly as you had it)
+    const firebaseConfig = {
+      apiKey: "AIzaSyCTcxkTuBfXhAKkx1PHa-xKjKmo0QM7FC4",
+      authDomain: "offseasonopen.firebaseapp.com",
+      databaseURL: "https://offseasonopen-default-rtdb.firebaseio.com",
+      projectId: "offseasonopen",
+      storageBucket: "offseasonopen.firebasestorage.app",
+      messagingSenderId: "213022712394",
+      appId: "1:213022712394:web:697fd75037b51728f6bcb3",
+      measurementId: "G-EJY4QY9WJ8"
+    };
 
     try {
       firebaseApp = firebase.initializeApp(firebaseConfig);
@@ -1002,7 +1050,6 @@
       firebaseAuth = firebase.auth();
       firebaseEnabled = true;
 
-      // Listen for login / logout
       firebaseAuth.onAuthStateChanged(user => {
         currentUser = user || null;
         updateAuthUI(currentUser);
@@ -1025,14 +1072,13 @@
     const ref = leagueRef();
     if (!ref) return;
 
-    // Detach old listener if any
     if (leagueListenerRef) {
       leagueListenerRef.off();
       leagueListenerRef = null;
     }
 
     if (!currentUser) {
-      // Not signed in: we just use local state
+      // Not signed in: just use local state
       return;
     }
 
@@ -1040,17 +1086,11 @@
     ref.on('value', snapshot => {
       const data = snapshot.val();
       if (data) {
-        // Merge remote state into local
-        state = {
-          players: data.players || [],
-          weeks: data.weeks || [],
-          scoring: data.scoring || structuredClone(defaultState.scoring)
-        };
-        // Cache locally without writing back to Firebase
+        state = normalizeState(data);
         saveStateLocal();
         refreshAll();
       } else {
-        // If nothing in DB yet, push our local current state as initial
+        // No data yet – push our current state
         saveStateToFirebase();
       }
     });
@@ -1067,7 +1107,6 @@
   }
 
   function saveState() {
-    // Called everywhere in the app when state changes
     saveStateLocal();
     saveStateToFirebase();
   }
@@ -1148,6 +1187,10 @@
     return 'w_' + Math.random().toString(36).slice(2, 10);
   }
 
+  function sid() {
+    return 's_' + Math.random().toString(36).slice(2, 10);
+  }
+
   function formatWeekRange(dateStr) {
     if (!dateStr) return 'No date';
     const start = new Date(dateStr + 'T00:00:00');
@@ -1201,8 +1244,6 @@
   }
 
   // Determine LD/CTP winners for a week from distances
-  // longDriveDistance: yards (max wins)
-  // closestDistance: inches (min wins)
   function computeBonusWinners(week) {
     let longWinner = null;
     let longMax = -Infinity;
@@ -1237,7 +1278,7 @@
     };
   }
 
-  // ----- Leaderboard calculation -----
+  // ----- Leaderboard calculation (per active season) -----
   function computeLeaderboard() {
     const scores = {};
     state.players.forEach(name => {
@@ -1258,11 +1299,12 @@
     });
 
     const placementPoints = state.scoring.placementPoints;
+    const activeSeasonId = getActiveSeasonId();
+    const weeks = state.weeks.filter(w => w.seasonId === activeSeasonId);
 
-    for (const week of state.weeks) {
+    for (const week of weeks) {
       if (!week.results || !Array.isArray(week.results)) continue;
 
-      // Determine positions by score (lower is better)
       const played = week.results
         .filter(r => r.played && typeof r.strokes === 'number' && !isNaN(r.strokes));
 
@@ -1281,7 +1323,6 @@
         r.position = found ? found.position : null;
       });
 
-      // Placement + participation + accumulate distance stats
       for (const r of week.results) {
         if (!scores[r.player]) continue;
 
@@ -1314,7 +1355,6 @@
         }
       }
 
-      // LD & CTP auto winners
       const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
       week.longDriveWinner = longWinnerName || null;
       week.closestWinner = closestWinnerName || null;
@@ -1361,7 +1401,8 @@
     const summaryLeader = document.getElementById('summary-leader');
 
     const leaderboard = computeLeaderboard();
-    const totalWeeks = state.weeks.length;
+    const weeksInSeason = getWeeksForActiveSeason();
+    const totalWeeks = weeksInSeason.length;
     const totalRounds = leaderboard.reduce((sum, p) => sum + p.roundsCount, 0);
 
     summaryWeeks.textContent = totalWeeks;
@@ -1373,8 +1414,8 @@
       return;
     }
 
-    if (!state.weeks.length) {
-      container.innerHTML = '<div class="empty-state">No weeks recorded yet. Use <strong>Weeks & Scores → Create Week</strong> to log your first week.</div>';
+    if (!weeksInSeason.length) {
+      container.innerHTML = '<div class="empty-state">No weeks recorded yet for this season. Use <strong>Weeks & Scores → Create Week</strong>.</div>';
       return;
     }
 
@@ -1406,9 +1447,7 @@
 
       html += `
         <tr class="${rank <= 3 ? 'highlight' : ''}">
-          <td>
-            <span class="rank-badge ${rankClass}">${rank}</span>
-          </td>
+          <td><span class="rank-badge ${rankClass}">${rank}</span></td>
           <td>${row.player}</td>
           <td>${row.points}</td>
           <td>${row.weeksPlayed}</td>
@@ -1429,13 +1468,14 @@
   // ----- Rendering: Weeks -----
   function renderWeeksList() {
     const container = document.getElementById('weeks-list-container');
+    const weeksInSeason = getWeeksForActiveSeason();
 
-    if (!state.weeks.length) {
-      container.innerHTML = '<div class="empty-state">No weeks recorded yet. Create a week above to start your tour.</div>';
+    if (!weeksInSeason.length) {
+      container.innerHTML = '<div class="empty-state">No weeks recorded yet in this season. Create a week above to start your tour.</div>';
       return;
     }
 
-    const weeksSorted = [...state.weeks].sort((a, b) => {
+    const weeksSorted = [...weeksInSeason].sort((a, b) => {
       if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
       return (b.date || '').localeCompare(a.date || '');
     });
@@ -1448,12 +1488,10 @@
       const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
       const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
 
-      // Ensure winners reflect latest distances
       const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
       const ldWinner = longWinnerName || week.longDriveWinner || null;
       const ctpWinner = closestWinnerName || week.closestWinner || null;
 
-      // Find distances for winners
       let ldDistDisplay = '—';
       let ctpDistDisplay = '—';
       if (ldWinner) {
@@ -1571,7 +1609,7 @@
     });
   }
 
-  // ----- Scores editor (per week) -----
+  // ----- Scores editor (per week, per season) -----
   function renderScoresSection() {
     renderScoresWeekOptions();
   }
@@ -1582,7 +1620,9 @@
 
     if (!weekSelect || !wrapper) return;
 
-    if (!state.weeks.length) {
+    const weeksInSeason = getWeeksForActiveSeason();
+
+    if (!weeksInSeason.length) {
       weekSelect.innerHTML = '<option value="">No weeks yet</option>';
       weekSelect.disabled = true;
       wrapper.innerHTML = '<div class="empty-state">Create a week above to start entering scores.</div>';
@@ -1591,7 +1631,7 @@
 
     weekSelect.disabled = false;
 
-    const weeksSorted = [...state.weeks].sort((a, b) => {
+    const weeksSorted = [...weeksInSeason].sort((a, b) => {
       if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
       return (b.date || '').localeCompare(a.date || '');
     });
@@ -1746,7 +1786,7 @@
     list.querySelectorAll('[data-remove-player]').forEach(btn => {
       btn.addEventListener('click', () => {
         const name = btn.getAttribute('data-remove-player');
-        if (!confirm("Remove " + name + " from the league? Past results for them will stay, but new weeks won't include them automatically.")) {
+        if (!confirm("Remove " + name + " from the league? Past results for them will stay.")) {
           return;
         }
         state.players = state.players.filter(p => p !== name);
@@ -1766,9 +1806,29 @@
     document.getElementById('score-closest').value = state.scoring.closestToPin ?? '';
   }
 
+  // ----- Rendering: Season controls -----
+  function renderSeasonControls() {
+    const select = document.getElementById('season-select');
+    if (!select) return;
+
+    if (!Array.isArray(state.seasons) || !state.seasons.length) {
+      state.seasons = [{ id: 'season1', name: 'Season 1' }];
+      state.activeSeasonId = 'season1';
+    }
+
+    const activeId = getActiveSeasonId();
+
+    select.innerHTML = state.seasons.map(s =>
+      `<option value="${s.id}">${s.name}</option>`
+    ).join('');
+
+    select.value = activeId;
+  }
+
   // ----- Header meta -----
   function renderHeaderMeta() {
-    document.getElementById('header-weeks-count').textContent = state.weeks.length;
+    const weeksInSeason = getWeeksForActiveSeason();
+    document.getElementById('header-weeks-count').textContent = weeksInSeason.length;
     document.getElementById('header-players-count').textContent = state.players.length;
   }
 
@@ -1849,6 +1909,7 @@
 
       const newWeek = {
         id: uid(),
+        seasonId: getActiveSeasonId(),
         date,
         course,
         host,
@@ -1865,7 +1926,7 @@
       refreshAll();
 
       form.reset();
-      alert('Week created. Now go to "Enter / Update Scores" to log results.');
+      alert('Week created for this season. Now go to "Enter / Update Scores" to log results.');
     });
 
     setupWeekForm.refreshHosts = refreshHosts;
@@ -1889,8 +1950,9 @@
       errorEl.style.display = 'none';
       errorEl.textContent = '';
 
-      if (!state.weeks.length) {
-        errorEl.textContent = 'Create a week first.';
+      const weeksInSeason = getWeeksForActiveSeason();
+      if (!weeksInSeason.length) {
+        errorEl.textContent = 'Create a week first for this season.';
         errorEl.style.display = 'block';
         return;
       }
@@ -1936,7 +1998,6 @@
         let ctpInches = ctpInchesInput && ctpInchesInput.value !== '' ? Number(ctpInchesInput.value) : null;
         let ctpTotalInches = null;
 
-        // If one of feet/inches is provided, treat missing as 0 (for convenience)
         if (ctpFeet !== null || ctpInches !== null) {
           if (ctpFeet === null) ctpFeet = 0;
           if (ctpInches === null) ctpInches = 0;
@@ -1990,8 +2051,8 @@
           played,
           strokes: played ? strokes : null,
           position: null,
-          longDriveDistance: (played && ldVal !== null && !isNaN(ldVal)) ? ldVal : null, // yards
-          closestDistance: (played && ctpTotalInches !== null && !isNaN(ctpTotalInches)) ? ctpTotalInches : null, // inches
+          longDriveDistance: (played && ldVal !== null && !isNaN(ldVal)) ? ldVal : null,
+          closestDistance: (played && ctpTotalInches !== null && !isNaN(ctpTotalInches)) ? ctpTotalInches : null,
           scorecardImage
         });
       }
@@ -2010,7 +2071,7 @@
     });
   }
 
-  // ----- Tab switching -----
+  // ----- Tabs -----
   function setupTabs() {
     const buttons = document.querySelectorAll('.tab-btn');
     const views = document.querySelectorAll('.view');
@@ -2026,12 +2087,18 @@
     });
   }
 
-  // ----- Settings events -----
+  // ----- Settings (players, scoring, seasons) -----
   function setupSettingsEvents() {
     const addPlayerBtn = document.getElementById('add-player-btn');
     const newPlayerInput = document.getElementById('new-player-name');
     const playerError = document.getElementById('player-error');
 
+    const seasonSelect = document.getElementById('season-select');
+    const addSeasonBtn = document.getElementById('add-season-btn');
+    const renameSeasonBtn = document.getElementById('rename-season-btn');
+    const deleteSeasonBtn = document.getElementById('delete-season-btn');
+
+    // Players
     addPlayerBtn.addEventListener('click', () => {
       playerError.style.display = 'none';
       playerError.textContent = '';
@@ -2060,6 +2127,7 @@
       }
     });
 
+    // Scoring
     document.getElementById('save-scoring-btn').addEventListener('click', () => {
       const p1 = Number(document.getElementById('score-1st').value || 0);
       const p2 = Number(document.getElementById('score-2nd').value || 0);
@@ -2081,22 +2149,78 @@
 
     document.getElementById('reset-scoring-btn').addEventListener('click', () => {
       if (!confirm('Reset scoring to default values?')) return;
-      state.scoring = structuredClone(defaultState.scoring);
+      state.scoring = structuredClone(defaultScoring);
       saveState();
       refreshAll();
     });
 
     document.getElementById('reset-all-btn').addEventListener('click', () => {
-      if (!confirm('This will erase all players, weeks and scoring settings from this browser. Continue?')) return;
+      if (!confirm('This will erase all players, weeks, seasons, and scoring settings from this browser. Continue?')) return;
       state = structuredClone(defaultState);
       saveState();
       refreshAll();
     });
+
+    // Seasons
+    if (seasonSelect) {
+      seasonSelect.addEventListener('change', () => {
+        const newId = seasonSelect.value;
+        if (!newId) return;
+        if (!state.seasons.some(s => s.id === newId)) return;
+        state.activeSeasonId = newId;
+        saveState();
+        refreshAll();
+      });
+    }
+
+    if (addSeasonBtn) {
+      addSeasonBtn.addEventListener('click', () => {
+        const name = prompt('New season name:', `Season ${state.seasons.length + 1}`);
+        if (!name) return;
+        const newId = sid();
+        state.seasons.push({ id: newId, name: name.trim() || `Season ${state.seasons.length + 1}` });
+        state.activeSeasonId = newId;
+        saveState();
+        refreshAll();
+      });
+    }
+
+    if (renameSeasonBtn) {
+      renameSeasonBtn.addEventListener('click', () => {
+        const activeId = getActiveSeasonId();
+        const season = state.seasons.find(s => s.id === activeId);
+        if (!season) return;
+        const newName = prompt('Rename season:', season.name || '');
+        if (!newName) return;
+        season.name = newName.trim();
+        saveState();
+        renderSeasonControls();
+      });
+    }
+
+    if (deleteSeasonBtn) {
+      deleteSeasonBtn.addEventListener('click', () => {
+        if (state.seasons.length <= 1) {
+          alert('You must have at least one season.');
+          return;
+        }
+        const activeId = getActiveSeasonId();
+        const season = state.seasons.find(s => s.id === activeId);
+        if (!confirm(`Delete season "${season?.name || activeId}" and all its weeks?`)) return;
+
+        state.seasons = state.seasons.filter(s => s.id !== activeId);
+        state.weeks = state.weeks.filter(w => w.seasonId !== activeId);
+        state.activeSeasonId = state.seasons[0].id;
+        saveState();
+        refreshAll();
+      });
+    }
   }
 
   // ----- Global refresh -----
   function refreshAll() {
     renderHeaderMeta();
+    renderSeasonControls();
     renderPlayersList();
     renderScoringSettings();
     if (setupWeekForm.refreshHosts) {
@@ -2114,11 +2238,12 @@
     setupScoresForm();
     setupSettingsEvents();
     setupAuthUI();
-    initFirebase();      // setup Firebase + auth + DB
+    initFirebase();
     refreshAll();
   });
 </script>
 </body>
 </html>
+
 
 
