@@ -1,0 +1,1934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Offseason Golf League Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #0b1720;
+      --bg-alt: #121f2b;
+      --card: #172636;
+      --accent: #40c463;
+      --accent-soft: rgba(64,196,99,0.15);
+      --accent-strong: #2da852;
+      --border-subtle: #223547;
+      --text-main: #f5f7fb;
+      --text-muted: #9aa9bd;
+      --danger: #ff5e5e;
+      --warning: #ffbe3d;
+      --radius-lg: 18px;
+      --radius-sm: 8px;
+      --shadow-soft: 0 16px 40px rgba(0,0,0,0.35);
+      --input-bg: #0f1b26;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #213047, #050910);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1100px;
+      margin: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+      border-radius: 30px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background:
+        radial-gradient(circle at 0% 0%, rgba(64,196,99,0.24), transparent 60%),
+        radial-gradient(circle at 100% 0%, rgba(64,196,99,0.14), transparent 50%),
+        rgba(3,13,21,0.9);
+      backdrop-filter: blur(18px);
+    }
+
+    .title-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.4rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h1 span.badge {
+      font-size: 0.7rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.9;
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .header-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .header-pill {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(4,11,19,0.8);
+    }
+
+    .header-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px rgba(64,196,99,0.9);
+    }
+
+    main {
+      padding: 16px 18px 20px;
+      background: radial-gradient(circle at 0 0, rgba(64,196,99,0.1), transparent 55%),
+                  radial-gradient(circle at 100% 100%, rgba(64,196,99,0.05), transparent 55%),
+                  #050910;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      padding: 3px;
+      background: rgba(9,19,29,0.85);
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.09);
+      align-self: flex-start;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+    }
+
+    .tab-btn span.dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.22);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    .tab-btn.active span.dot {
+      background: var(--accent);
+      box-shadow: 0 0 6px rgba(64,196,99,0.8);
+    }
+
+    .views {
+      margin-top: 6px;
+      flex: 1;
+      display: grid;
+    }
+
+    .view {
+      display: none;
+      grid-template-columns: minmax(0,1fr);
+      gap: 14px;
+      align-content: flex-start;
+    }
+
+    .view.active {
+      display: grid;
+    }
+
+    /* Cards & layout */
+    .card {
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.08), rgba(255,255,255,0.01));
+      border-radius: var(--radius-lg);
+      padding: 14px 14px 12px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .card-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--text-muted);
+    }
+
+    .pill-accent {
+      border-color: rgba(64,196,99,0.7);
+      color: var(--accent);
+      background: rgba(64,196,99,0.12);
+    }
+
+    .pill-warning {
+      border-color: rgba(255,190,61,0.9);
+      color: var(--warning);
+      background: rgba(255,190,61,0.14);
+    }
+
+    /* Leaderboard */
+    .leaderboard-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 10px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .stat-chip {
+      padding: 5px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(7,15,24,0.9);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stat-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.7rem;
+      opacity: 0.7;
+    }
+
+    .stat-value {
+      font-weight: 500;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    thead {
+      background: rgba(5,13,21,0.9);
+    }
+
+    th, td {
+      text-align: left;
+      padding: 7px 6px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    th {
+      font-weight: 500;
+      font-size: 0.74rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    tbody tr:nth-child(even) td {
+      background: rgba(255,255,255,0.01);
+    }
+
+    tbody tr.highlight td {
+      background: rgba(64,196,99,0.08);
+    }
+
+    .rank-badge {
+      min-width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .rank-1 {
+      border-color: rgba(255,215,0,0.9);
+      color: #ffe98c;
+      background: rgba(255,215,0,0.1);
+    }
+
+    .rank-2 {
+      border-color: rgba(192,192,192,0.9);
+      color: #e3e7eb;
+      background: rgba(192,192,192,0.08);
+    }
+
+    .rank-3 {
+      border-color: rgba(205,127,50,0.9);
+      color: #ffd4a2;
+      background: rgba(205,127,50,0.08);
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .form-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .field-group {
+      margin-bottom: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select {
+      background: var(--input-bg);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 7px 9px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(64,196,99,0.8);
+      box-shadow: 0 0 0 1px rgba(64,196,99,0.5);
+      background: #0b1720;
+    }
+
+    .inline {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .player-results-table {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(5,13,21,0.85);
+      margin-top: 4px;
+    }
+
+    .player-results-table th,
+    .player-results-table td {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      padding: 6px 6px;
+      font-size: 0.78rem;
+    }
+
+    .player-results-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .player-name-cell {
+      font-weight: 500;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .checkbox-cell input[type="checkbox"] {
+      transform: scale(1.05);
+    }
+
+    /* Weeks list */
+    .weeks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 6px;
+      max-height: 360px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .week-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(255,255,255,0.06);
+      background: radial-gradient(circle at top left, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
+      padding: 9px 9px 8px;
+    }
+
+    .week-header-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .week-main-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: baseline;
+    }
+
+    .week-course {
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+
+    .week-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .week-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .week-body {
+      margin-top: 4px;
+    }
+
+    .week-body small {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .week-body table {
+      margin-top: 4px;
+      font-size: 0.76rem;
+    }
+
+    .week-footer {
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+
+    .course-photo-thumb {
+      margin-top: 6px;
+    }
+
+    .course-photo-thumb img {
+      max-width: 100%;
+      max-height: 180px;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.18);
+      display: block;
+      object-fit: cover;
+    }
+
+    .small-note {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Settings */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .settings-grid {
+        grid-template-columns: minmax(0,1fr);
+      }
+    }
+
+    .pill-tag {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(8,16,25,0.9);
+      font-size: 0.78rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-tag button {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.8rem;
+      padding: 0;
+    }
+
+    .settings-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .error-text {
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--danger);
+    }
+
+    .empty-state {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 8px 6px;
+    }
+
+    .subtle-separator {
+      height: 1px;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent);
+      margin: 6px 0;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div class="title-stack">
+        <h1>
+          Offseason Tour
+          <span class="badge">Sim League</span>
+        </h1>
+        <div class="subtitle">
+          Weekly TrackMan “week of” rounds with auto LD/CTP scoring & bragging rights.
+        </div>
+      </div>
+      <div class="header-meta">
+        <div class="header-pill">
+          <span class="header-pill-dot"></span>
+          Live leaderboard
+        </div>
+        <div class="header-pill">
+          Weeks logged:
+          <span id="header-weeks-count">0</span>
+        </div>
+        <div class="header-pill">
+          Players:
+          <span id="header-players-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <div class="tabs">
+        <button class="tab-btn active" data-view="leaderboard-view">
+          <span class="dot"></span> Leaderboard
+        </button>
+        <button class="tab-btn" data-view="weeks-view">
+          <span class="dot"></span> Weeks & Scores
+        </button>
+        <button class="tab-btn" data-view="settings-view">
+          <span class="dot"></span> Settings
+        </button>
+      </div>
+
+      <div class="views">
+        <!-- Leaderboard View -->
+        <section id="leaderboard-view" class="view active">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">League Standings</div>
+                <div class="card-subtitle">
+                  Points from weekly finishes, participation, longest drive & closest to the pin.
+                </div>
+              </div>
+              <span class="pill pill-accent">Auto-calculated</span>
+            </div>
+
+            <div class="leaderboard-summary">
+              <div class="stat-chip">
+                <span class="stat-label">Weeks</span>
+                <span class="stat-value" id="summary-weeks">0</span>
+              </div>
+              <div class="stat-chip">
+                <span class="stat-label">Total rounds</span>
+                <span class="stat-value" id="summary-rounds">0</span>
+              </div>
+              <div class="stat-chip">
+                <span class="stat-label">Top scorer</span>
+                <span class="stat-value" id="summary-leader">—</span>
+              </div>
+            </div>
+
+            <div class="subtle-separator"></div>
+
+            <div id="leaderboard-table-container">
+              <!-- Table rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Weeks View -->
+        <section id="weeks-view" class="view">
+          <!-- Create week (course + settings) -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Create Week & Course Settings</div>
+                <div class="card-subtitle">
+                  Define the “week of” and course details. Scores & distances are filled in later.
+                </div>
+              </div>
+              <span class="pill">Step 1: Create week</span>
+            </div>
+
+            <form id="week-form">
+              <div class="form-grid">
+                <div>
+                  <div class="field-group">
+                    <label for="week-date">Week start date (week of)</label>
+                    <input type="date" id="week-date" required />
+                  </div>
+
+                  <div class="field-group">
+                    <label for="week-course">Course name</label>
+                    <input type="text" id="week-course" placeholder="e.g. Pebble Beach, St Andrews…" required />
+                  </div>
+
+                  <div class="field-group">
+                    <label for="week-host">Host (picked course/settings)</label>
+                    <select id="week-host" required>
+                      <!-- options via JS -->
+                    </select>
+                  </div>
+
+                  <div class="field-group inline">
+                    <div style="flex: 1;">
+                      <label for="week-long-hole">Longest drive hole (optional)</label>
+                      <input type="text" id="week-long-hole" placeholder="e.g. 5" />
+                    </div>
+                    <div style="flex: 1;">
+                      <label for="week-closest-hole">Closest to pin hole (optional)</label>
+                      <input type="text" id="week-closest-hole" placeholder="e.g. 12" />
+                    </div>
+                  </div>
+
+                  <div class="field-group">
+                    <label for="week-course-photo">Course settings photo (optional)</label>
+                    <input type="file" id="week-course-photo" accept="image/*" />
+                    <div class="settings-hint">
+                      Upload a screenshot/photo of your TrackMan settings, tees, wind, pins, etc.
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="settings-hint">
+                    This creates the weekly “event” and course setup only.
+                    <br /><br />
+                    After everyone plays (any day that week), use
+                    <strong>Enter / Update Scores</strong> below to log:
+                    <ul style="margin:4px 0 0 16px; padding:0; font-size:0.74rem;">
+                      <li>Who played & their score</li>
+                      <li>Long drive distances <strong>(yards)</strong></li>
+                      <li>Closest to the pin distances <strong>(feet + inches)</strong></li>
+                      <li>Optional scorecard photos</li>
+                    </ul>
+                    The system will automatically award LD/CTP points based on the distances.
+                  </div>
+                </div>
+              </div>
+
+              <div class="subtle-separator"></div>
+
+              <div class="inline" style="justify-content: space-between; margin-top: 2px;">
+                <div id="week-form-error" class="error-text" style="display:none;"></div>
+                <div class="inline">
+                  <button type="button" class="btn btn-ghost btn-sm" id="clear-week-form-btn">Clear</button>
+                  <button type="submit" class="btn btn-primary">Save week</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Enter / update scores for a week -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Enter / Update Scores</div>
+                <div class="card-subtitle">
+                  Pick a week, then log who played, their scores, LD & CTP distances, and scorecards.
+                </div>
+              </div>
+              <span class="pill pill-warning">Step 2: Fill scores</span>
+            </div>
+
+            <form id="scores-form">
+              <div class="field-group">
+                <label for="scores-week-select">Select week</label>
+                <select id="scores-week-select">
+                  <!-- options via JS -->
+                </select>
+                <div class="settings-hint">
+                  Players can play on <strong>any day</strong> of this week. You’re just attaching their results.
+                </div>
+              </div>
+
+              <div class="field-group">
+                <label>Player scores & distances</label>
+                <div class="settings-hint">
+                  Distances:
+                  <ul style="margin:4px 0 0 16px; padding:0; font-size:0.74rem;">
+                    <li><strong>LD (yd)</strong> → system finds the longest (max) distance and awards Long Drive points</li>
+                    <li><strong>CTP (ft + in)</strong> → system finds the shortest (min) distance (converted to inches) and awards CTP points</li>
+                  </ul>
+                </div>
+                <div id="scores-player-results-wrapper">
+                  <!-- table via JS -->
+                </div>
+              </div>
+
+              <div class="subtle-separator"></div>
+
+              <div class="inline" style="justify-content: space-between; margin-top: 2px;">
+                <div id="scores-form-error" class="error-text" style="display:none;"></div>
+                <div class="inline">
+                  <button type="submit" class="btn btn-primary">Save scores</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Weeks log -->
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Weeks Log</div>
+                <div class="card-subtitle">History of every sim week (most recent first).</div>
+              </div>
+              <span class="pill">Week-of view</span>
+            </div>
+
+            <div id="weeks-list-container">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings View -->
+        <section id="settings-view" class="view">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">Players & Scoring</div>
+                <div class="card-subtitle">Set your crew and how points are awarded.</div>
+              </div>
+              <span class="pill">Only stored in your browser</span>
+            </div>
+
+            <div class="settings-grid">
+              <!-- Players -->
+              <div>
+                <div class="field-group">
+                  <label>Add player</label>
+                  <div class="inline">
+                    <input type="text" id="new-player-name" placeholder="e.g. Dave" />
+                    <button class="btn btn-primary btn-sm" id="add-player-btn" type="button">Add</button>
+                  </div>
+                  <div id="player-error" class="error-text" style="display:none;"></div>
+                </div>
+
+                <div class="field-group">
+                  <label>Current players</label>
+                  <div id="players-list">
+                    <!-- chips -->
+                  </div>
+                  <div class="settings-hint">
+                    These appear in hosts, score entry, and LD/CTP auto calcs.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Scoring -->
+              <div>
+                <div class="field-group">
+                  <label>Placement points</label>
+                  <div class="inline">
+                    <div style="flex:1;">
+                      <div class="settings-hint">1st place</div>
+                      <input type="number" id="score-1st" min="0" step="1" />
+                    </div>
+                    <div style="flex:1;">
+                      <div class="settings-hint">2nd place</div>
+                      <input type="number" id="score-2nd" min="0" step="1" />
+                    </div>
+                  </div>
+                  <div class="inline" style="margin-top:6px;">
+                    <div style="flex:1;">
+                      <div class="settings-hint">3rd place</div>
+                      <input type="number" id="score-3rd" min="0" step="1" />
+                    </div>
+                    <div style="flex:1;">
+                      <div class="settings-hint">4th place</div>
+                      <input type="number" id="score-4th" min="0" step="1" />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field-group inline">
+                  <div style="flex:1;">
+                    <label>Participation</label>
+                    <input type="number" id="score-participation" min="0" step="1" />
+                  </div>
+                  <div style="flex:1;">
+                    <label>Longest drive bonus</label>
+                    <input type="number" id="score-long" min="0" step="1" />
+                  </div>
+                  <div style="flex:1;">
+                    <label>Closest to pin bonus</label>
+                    <input type="number" id="score-closest" min="0" step="1" />
+                  </div>
+                </div>
+
+                <div class="inline" style="margin-top:6px; justify-content: space-between;">
+                  <button class="btn btn-ghost btn-sm" type="button" id="save-scoring-btn">Save scoring</button>
+                  <div class="inline" style="gap: 6px;">
+                    <button class="btn btn-ghost btn-sm" type="button" id="reset-scoring-btn">Reset defaults</button>
+                    <button class="btn btn-danger btn-sm" type="button" id="reset-all-btn">Reset all data</button>
+                  </div>
+                </div>
+
+                <div class="settings-hint">
+                  Default scoring: 1st = 5 pts, 2nd = 3 pts, 3rd = 2 pts, 4th = 1 pt, plus 1 for playing, 1 each for LD & CTP.
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+  // ----- Data model & persistence -----
+  const STORAGE_KEY = 'offseason_golf_league_v1';
+
+  const defaultState = {
+    players: [],
+    weeks: [],
+    scoring: {
+      placementPoints: { 1: 5, 2: 3, 3: 2, 4: 1 },
+      participation: 1,
+      longDrive: 1,
+      closestToPin: 1
+    }
+  };
+
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return structuredClone(defaultState);
+      const parsed = JSON.parse(raw);
+      return {
+        players: parsed.players || [],
+        weeks: parsed.weeks || [],
+        scoring: {
+          placementPoints: {
+            1: parsed?.scoring?.placementPoints?.[1] ?? 5,
+            2: parsed?.scoring?.placementPoints?.[2] ?? 3,
+            3: parsed?.scoring?.placementPoints?.[3] ?? 2,
+            4: parsed?.scoring?.placementPoints?.[4] ?? 1
+          },
+          participation: parsed?.scoring?.participation ?? 1,
+          longDrive: parsed?.scoring?.longDrive ?? 1,
+          closestToPin: parsed?.scoring?.closestToPin ?? 1
+        }
+      };
+    } catch (e) {
+      console.error('Failed to load state, resetting.', e);
+      return structuredClone(defaultState);
+    }
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // ----- Helpers -----
+  function uid() {
+    return 'w_' + Math.random().toString(36).slice(2, 10);
+  }
+
+  function formatWeekRange(dateStr) {
+    if (!dateStr) return 'No date';
+    const start = new Date(dateStr + 'T00:00:00');
+    if (isNaN(start.getTime())) return dateStr;
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6);
+
+    const shortOpts = { month: 'short', day: 'numeric' };
+    const longOpts = { month: 'short', day: 'numeric', year: 'numeric' };
+
+    if (start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth()) {
+      const startStr = start.toLocaleDateString(undefined, shortOpts);
+      const endDay = end.getDate();
+      return `${startStr}–${endDay}, ${start.getFullYear()}`;
+    } else if (start.getFullYear() === end.getFullYear()) {
+      const startStr = start.toLocaleDateString(undefined, shortOpts);
+      const endStr = end.toLocaleDateString(undefined, shortOpts);
+      return `${startStr} – ${endStr}, ${start.getFullYear()}`;
+    } else {
+      const startStr = start.toLocaleDateString(undefined, longOpts);
+      const endStr = end.toLocaleDateString(undefined, longOpts);
+      return `${startStr} – ${endStr}`;
+    }
+  }
+
+  function playerToId(name) {
+    return name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  function positionSuffix(n) {
+    if (n === 1) return 'st';
+    if (n === 2) return 'nd';
+    if (n === 3) return 'rd';
+    return 'th';
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function formatFeetInches(totalInches) {
+    if (typeof totalInches !== 'number' || isNaN(totalInches)) return '—';
+    const feet = Math.floor(totalInches / 12);
+    const inches = Math.round(totalInches % 12);
+    return `${feet}' ${inches}"`;
+  }
+
+  // Determine LD/CTP winners for a week from distances
+  // longDriveDistance: yards (max wins)
+  // closestDistance: inches (min wins)
+  function computeBonusWinners(week) {
+    let longWinner = null;
+    let longMax = -Infinity;
+    let closestWinner = null;
+    let closestMin = Infinity;
+
+    if (!week.results || !Array.isArray(week.results)) {
+      return { longWinnerName: null, closestWinnerName: null };
+    }
+
+    for (const r of week.results) {
+      if (!r.played) continue;
+
+      if (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
+        if (r.longDriveDistance > longMax) {
+          longMax = r.longDriveDistance;
+          longWinner = r.player;
+        }
+      }
+
+      if (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
+        if (r.closestDistance < closestMin) {
+          closestMin = r.closestDistance;
+          closestWinner = r.player;
+        }
+      }
+    }
+
+    return {
+      longWinnerName: longWinner,
+      closestWinnerName: closestWinner
+    };
+  }
+
+  // ----- Leaderboard calculation -----
+  function computeLeaderboard() {
+    const scores = {};
+    state.players.forEach(name => {
+      scores[name] = {
+        player: name,
+        points: 0,
+        weeksPlayed: 0,
+        wins: 0,
+        totalStrokes: 0,
+        roundsCount: 0,
+        ldWins: 0,
+        ctpWins: 0,
+        totalLdYards: 0,
+        ldAttempts: 0,
+        totalCtpInches: 0,
+        ctpAttempts: 0
+      };
+    });
+
+    const placementPoints = state.scoring.placementPoints;
+
+    for (const week of state.weeks) {
+      if (!week.results || !Array.isArray(week.results)) continue;
+
+      // Determine positions by score (lower is better)
+      const played = week.results
+        .filter(r => r.played && typeof r.strokes === 'number' && !isNaN(r.strokes));
+
+      played.sort((a, b) => a.strokes - b.strokes);
+
+      let currentPos = 1;
+      for (let i = 0; i < played.length; i++) {
+        if (i > 0 && played[i].strokes > played[i - 1].strokes) {
+          currentPos = i + 1;
+        }
+        played[i].position = currentPos;
+      }
+
+      week.results.forEach(r => {
+        const found = played.find(p => p.player === r.player);
+        r.position = found ? found.position : null;
+      });
+
+      // Placement + participation + accumulate distance stats
+      for (const r of week.results) {
+        if (!scores[r.player]) continue;
+
+        if (r.played) {
+          scores[r.player].weeksPlayed += 1;
+          scores[r.player].roundsCount += 1;
+          if (typeof r.strokes === 'number' && !isNaN(r.strokes)) {
+            scores[r.player].totalStrokes += r.strokes;
+          }
+
+          if (r.position) {
+            const basePoints = placementPoints[r.position] || 0;
+            scores[r.player].points += basePoints;
+            if (r.position === 1) {
+              scores[r.player].wins += 1;
+            }
+          }
+
+          scores[r.player].points += state.scoring.participation;
+
+          if (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
+            scores[r.player].ldAttempts += 1;
+            scores[r.player].totalLdYards += r.longDriveDistance;
+          }
+
+          if (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
+            scores[r.player].ctpAttempts += 1;
+            scores[r.player].totalCtpInches += r.closestDistance;
+          }
+        }
+      }
+
+      // LD & CTP auto winners
+      const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
+      week.longDriveWinner = longWinnerName || null;
+      week.closestWinner = closestWinnerName || null; // <-- fixed name here
+
+      if (longWinnerName && scores[longWinnerName]) {
+        scores[longWinnerName].points += state.scoring.longDrive;
+        scores[longWinnerName].ldWins += 1;
+      }
+      if (closestWinnerName && scores[closestWinnerName]) {
+        scores[closestWinnerName].points += state.scoring.closestToPin;
+        scores[closestWinnerName].ctpWins += 1;
+      }
+    }
+
+    const arr = Object.values(scores).map(s => {
+      const avgStrokes = s.roundsCount > 0 ? s.totalStrokes / s.roundsCount : null;
+      const avgLdYards = s.ldAttempts > 0 ? s.totalLdYards / s.ldAttempts : null;
+      const avgCtpFeet = s.ctpAttempts > 0 ? (s.totalCtpInches / s.ctpAttempts) / 12 : null;
+      return {
+        ...s,
+        avgStrokes,
+        avgLdYards,
+        avgCtpFeet
+      };
+    });
+
+    arr.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      if (b.wins !== a.wins) return b.wins - a.wins;
+      if (a.avgStrokes !== null && b.avgStrokes !== null && a.avgStrokes !== b.avgStrokes) {
+        return a.avgStrokes - b.avgStrokes;
+      }
+      return a.player.localeCompare(b.player);
+    });
+
+    return arr;
+  }
+
+  // ----- Rendering: Leaderboard -----
+  function renderLeaderboard() {
+    const container = document.getElementById('leaderboard-table-container');
+    const summaryWeeks = document.getElementById('summary-weeks');
+    const summaryRounds = document.getElementById('summary-rounds');
+    const summaryLeader = document.getElementById('summary-leader');
+
+    const leaderboard = computeLeaderboard();
+    const totalWeeks = state.weeks.length;
+    const totalRounds = leaderboard.reduce((sum, p) => sum + p.roundsCount, 0);
+
+    summaryWeeks.textContent = totalWeeks;
+    summaryRounds.textContent = totalRounds;
+    summaryLeader.textContent = leaderboard[0] ? leaderboard[0].player : '—';
+
+    if (!state.players.length) {
+      container.innerHTML = '<div class="empty-state">Add players in <strong>Settings</strong> to begin.</div>';
+      return;
+    }
+
+    if (!state.weeks.length) {
+      container.innerHTML = '<div class="empty-state">No weeks recorded yet. Use <strong>Weeks & Scores → Create Week</strong> to log your first week.</div>';
+      return;
+    }
+
+    let html = `
+      <table>
+        <thead>
+          <tr>
+            <th style="width:32px;">#</th>
+            <th>Player</th>
+            <th>Pts</th>
+            <th>Weeks</th>
+            <th>Wins</th>
+            <th>LD wins</th>
+            <th>CTP wins</th>
+            <th>Avg Score</th>
+            <th>Avg LD (yd)</th>
+            <th>Avg CTP (ft)</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    leaderboard.forEach((row, index) => {
+      const rank = index + 1;
+      const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
+      const avgScore = row.avgStrokes !== null ? row.avgStrokes.toFixed(1) : '—';
+      const avgLd = row.avgLdYards !== null ? row.avgLdYards.toFixed(1) : '—';
+      const avgCtp = row.avgCtpFeet !== null ? row.avgCtpFeet.toFixed(1) : '—';
+
+      html += `
+        <tr class="${rank <= 3 ? 'highlight' : ''}">
+          <td>
+            <span class="rank-badge ${rankClass}">${rank}</span>
+          </td>
+          <td>${row.player}</td>
+          <td>${row.points}</td>
+          <td>${row.weeksPlayed}</td>
+          <td>${row.wins}</td>
+          <td>${row.ldWins}</td>
+          <td>${row.ctpWins}</td>
+          <td>${avgScore}</td>
+          <td>${avgLd}</td>
+          <td>${avgCtp}</td>
+        </tr>
+      `;
+    });
+
+    html += '</tbody></table>';
+    container.innerHTML = html;
+  }
+
+  // ----- Rendering: Weeks -----
+  function renderWeeksList() {
+    const container = document.getElementById('weeks-list-container');
+
+    if (!state.weeks.length) {
+      container.innerHTML = '<div class="empty-state">No weeks recorded yet. Create a week above to start your tour.</div>';
+      return;
+    }
+
+    const weeksSorted = [...state.weeks].sort((a, b) => {
+      if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
+      return (b.date || '').localeCompare(a.date || '');
+    });
+
+    let html = '<div class="weeks-list">';
+
+    for (const week of weeksSorted) {
+      const playedCount = (week.results || []).filter(r => r.played).length;
+      const weekLabel = week.date ? formatWeekRange(week.date) : 'No date';
+      const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
+      const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
+
+      // Ensure winners reflect latest distances
+      const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
+      const ldWinner = longWinnerName || week.longDriveWinner || null;
+      const ctpWinner = closestWinnerName || week.closestWinner || null;
+
+      // Find distances for winners
+      let ldDistDisplay = '—';
+      let ctpDistDisplay = '—';
+      if (ldWinner) {
+        const r = (week.results || []).find(x => x.player === ldWinner);
+        if (r && typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
+          ldDistDisplay = `${r.longDriveDistance.toFixed(1)} yd`;
+        }
+      }
+      if (ctpWinner) {
+        const r = (week.results || []).find(x => x.player === ctpWinner);
+        if (r && typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
+          ctpDistDisplay = formatFeetInches(r.closestDistance);
+        }
+      }
+
+      html += `
+        <div class="week-card">
+          <div class="week-header-line">
+            <div class="week-main-info">
+              <span class="week-course">${week.course || 'Unknown course'}</span>
+              <span class="week-meta">• Week of ${weekLabel}</span>
+              <span class="week-meta">• Host: ${week.host || '—'}</span>
+            </div>
+            <div class="week-pills">
+              <span class="pill">${playedCount} played</span>
+              <span class="pill pill-accent">${longLabel}</span>
+              <span class="pill pill-accent">${closestLabel}</span>
+            </div>
+          </div>
+          <div class="week-body">
+      `;
+
+      if (week.coursePhoto) {
+        html += `
+          <small>Course settings photo:</small>
+          <div class="course-photo-thumb">
+            <img src="${week.coursePhoto}" alt="Course settings photo" />
+          </div>
+        `;
+      } else {
+        html += `<small>No course settings photo uploaded.</small>`;
+      }
+
+      html += `
+            <table>
+              <thead>
+                <tr>
+                  <th>Player</th>
+                  <th>Score</th>
+                  <th>Finish</th>
+                  <th>Played</th>
+                  <th>LD (yd)</th>
+                  <th>CTP</th>
+                  <th>Card</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+      const byName = [...(week.results || [])].sort((a, b) => a.player.localeCompare(b.player));
+
+      for (const r of byName) {
+        const pos = r.position ? `${r.position}${positionSuffix(r.position)}` : '—';
+        const scoreDisplay = (typeof r.strokes === 'number' && !isNaN(r.strokes)) ? r.strokes : '—';
+        const ldDisplay = (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance))
+          ? `${r.longDriveDistance.toFixed(1)}`
+          : '—';
+        const ctpDisplay = (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance))
+          ? formatFeetInches(r.closestDistance)
+          : '—';
+        const hasCard = !!r.scorecardImage;
+        const cardCell = hasCard
+          ? `<a href="${r.scorecardImage}" target="_blank">View</a>`
+          : '—';
+
+        html += `
+          <tr>
+            <td>${r.player}</td>
+            <td>${scoreDisplay}</td>
+            <td>${pos}</td>
+            <td>${r.played ? 'Yes' : 'No'}</td>
+            <td>${ldDisplay}</td>
+            <td>${ctpDisplay}</td>
+            <td>${cardCell}</td>
+          </tr>
+        `;
+      }
+
+      html += `
+              </tbody>
+            </table>
+          </div>
+          <div class="week-footer">
+            <span>
+              LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
+              CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
+            </span>
+            <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('[data-delete-week]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete-week');
+        if (!confirm("Delete this week from the log?")) return;
+        state.weeks = state.weeks.filter(w => w.id !== id);
+        saveState();
+        refreshAll();
+      });
+    });
+  }
+
+  // ----- Scores editor (per week) -----
+  function renderScoresSection() {
+    renderScoresWeekOptions();
+  }
+
+  function renderScoresWeekOptions() {
+    const weekSelect = document.getElementById('scores-week-select');
+    const wrapper = document.getElementById('scores-player-results-wrapper');
+
+    if (!weekSelect || !wrapper) return;
+
+    if (!state.weeks.length) {
+      weekSelect.innerHTML = '<option value="">No weeks yet</option>';
+      weekSelect.disabled = true;
+      wrapper.innerHTML = '<div class="empty-state">Create a week above to start entering scores.</div>';
+      return;
+    }
+
+    weekSelect.disabled = false;
+
+    const weeksSorted = [...state.weeks].sort((a, b) => {
+      if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
+      return (b.date || '').localeCompare(a.date || '');
+    });
+
+    const previous = weekSelect.value;
+
+    weekSelect.innerHTML = weeksSorted.map(w => {
+      const label = w.date
+        ? `Week of ${formatWeekRange(w.date)} • ${w.course || 'Unknown'}`
+        : `${w.course || 'Unknown'} (no date)`;
+      return `<option value="${w.id}">${label}</option>`;
+    }).join('');
+
+    let selectedId = previous && weeksSorted.some(w => w.id === previous)
+      ? previous
+      : weeksSorted[0].id;
+
+    weekSelect.value = selectedId;
+    renderScoresEditorForWeek(selectedId);
+  }
+
+  function renderScoresEditorForWeek(weekId) {
+    const wrapper = document.getElementById('scores-player-results-wrapper');
+    const week = state.weeks.find(w => w.id === weekId);
+
+    if (!week) {
+      wrapper.innerHTML = '<div class="empty-state">Select a valid week.</div>';
+      return;
+    }
+
+    if (!state.players.length) {
+      wrapper.innerHTML = '<div class="empty-state">Add players in <strong>Settings</strong> to enter scores.</div>';
+      return;
+    }
+
+    const existingResults = Array.isArray(week.results) ? week.results : [];
+    const playersUnion = [...state.players];
+
+    for (const r of existingResults) {
+      if (!playersUnion.includes(r.player)) {
+        playersUnion.push(r.player);
+      }
+    }
+
+    let tableHtml = `
+      <table class="player-results-table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th class="center">Played</th>
+            <th class="center">Score</th>
+            <th class="center">LD (yd)</th>
+            <th class="center">CTP ft</th>
+            <th class="center">CTP in</th>
+            <th class="center">Scorecard</th>
+          </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (const player of playersUnion) {
+      const safeId = playerToId(player);
+      const existing = existingResults.find(r => r.player === player);
+      const played = existing?.played ?? false;
+      const strokes = (typeof existing?.strokes === 'number' && !isNaN(existing.strokes))
+        ? existing.strokes
+        : '';
+      const ld = (typeof existing?.longDriveDistance === 'number' && !isNaN(existing.longDriveDistance))
+        ? existing.longDriveDistance
+        : '';
+      let ctpFeet = '';
+      let ctpInches = '';
+      if (typeof existing?.closestDistance === 'number' && !isNaN(existing.closestDistance)) {
+        ctpFeet = Math.floor(existing.closestDistance / 12);
+        ctpInches = Math.round(existing.closestDistance % 12);
+      }
+      const hasCard = !!existing?.scorecardImage;
+
+      tableHtml += `
+        <tr>
+          <td class="player-name-cell">${player}</td>
+          <td class="center checkbox-cell">
+            <input type="checkbox" id="score-played-${safeId}" ${played ? 'checked' : ''} />
+          </td>
+          <td class="center">
+            <input type="number"
+                   id="score-strokes-${safeId}"
+                   placeholder="73"
+                   style="width: 80px; text-align:center;"
+                   value="${strokes !== '' ? strokes : ''}" />
+          </td>
+          <td class="center">
+            <input type="number"
+                   id="score-ld-${safeId}"
+                   placeholder="yd"
+                   style="width: 80px; text-align:center;"
+                   step="0.1"
+                   value="${ld !== '' ? ld : ''}" />
+          </td>
+          <td class="center">
+            <input type="number"
+                   id="score-ctp-ft-${safeId}"
+                   placeholder="ft"
+                   style="width: 60px; text-align:center;"
+                   step="1"
+                   value="${ctpFeet !== '' ? ctpFeet : ''}" />
+          </td>
+          <td class="center">
+            <input type="number"
+                   id="score-ctp-in-${safeId}"
+                   placeholder="in"
+                   style="width: 60px; text-align:center;"
+                   step="1"
+                   min="0"
+                   max="11"
+                   value="${ctpInches !== '' ? ctpInches : ''}" />
+          </td>
+          <td class="center">
+            <input type="file" id="scorecard-file-${safeId}" accept="image/*" />
+            ${hasCard ? '<div class="small-note">Uploaded</div>' : ''}
+          </td>
+        </tr>
+      `;
+    }
+
+    tableHtml += '</tbody></table>';
+    wrapper.innerHTML = tableHtml;
+  }
+
+  // ----- Rendering: Settings (players & scoring) -----
+  function renderPlayersList() {
+    const list = document.getElementById('players-list');
+    const headerPlayersCount = document.getElementById('header-players-count');
+    headerPlayersCount.textContent = state.players.length;
+
+    if (!state.players.length) {
+      list.innerHTML = '<div class="empty-state">No players yet. Add your crew above.</div>';
+      return;
+    }
+
+    let html = '';
+    for (const p of state.players) {
+      html += `
+        <span class="pill-tag">
+          ${p}
+          <button type="button" data-remove-player="${p}">×</button>
+        </span>
+      `;
+    }
+    list.innerHTML = html;
+
+    list.querySelectorAll('[data-remove-player]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-remove-player');
+        if (!confirm("Remove " + name + " from the league? Past results for them will stay, but new weeks won't include them automatically.")) {
+          return;
+        }
+        state.players = state.players.filter(p => p !== name);
+        saveState();
+        refreshAll();
+      });
+    });
+  }
+
+  function renderScoringSettings() {
+    document.getElementById('score-1st').value = state.scoring.placementPoints[1] ?? '';
+    document.getElementById('score-2nd').value = state.scoring.placementPoints[2] ?? '';
+    document.getElementById('score-3rd').value = state.scoring.placementPoints[3] ?? '';
+    document.getElementById('score-4th').value = state.scoring.placementPoints[4] ?? '';
+    document.getElementById('score-participation').value = state.scoring.participation ?? '';
+    document.getElementById('score-long').value = state.scoring.longDrive ?? '';
+    document.getElementById('score-closest').value = state.scoring.closestToPin ?? '';
+  }
+
+  // ----- Header meta -----
+  function renderHeaderMeta() {
+    document.getElementById('header-weeks-count').textContent = state.weeks.length;
+    document.getElementById('header-players-count').textContent = state.players.length;
+  }
+
+  // ----- Week form handling (create week) -----
+  function setupWeekForm() {
+    const form = document.getElementById('week-form');
+    const clearBtn = document.getElementById('clear-week-form-btn');
+    const hostSelect = document.getElementById('week-host');
+
+    function refreshHosts() {
+      if (!state.players.length) {
+        hostSelect.innerHTML = '<option value="">Add players in Settings</option>';
+        hostSelect.disabled = true;
+        return;
+      }
+      hostSelect.disabled = false;
+      hostSelect.innerHTML = state.players.map(p => {
+        const escaped = p.replace(/"/g, '&quot;');
+        return `<option value="${escaped}">${escaped}</option>`;
+      }).join('');
+    }
+
+    refreshHosts();
+
+    clearBtn.addEventListener('click', () => {
+      form.reset();
+      const errorEl = document.getElementById('week-form-error');
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorEl = document.getElementById('week-form-error');
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+
+      if (!state.players.length) {
+        errorEl.textContent = 'Add at least one player in Settings first (to choose a host).';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const date = document.getElementById('week-date').value || '';
+      const course = document.getElementById('week-course').value.trim();
+      const host = document.getElementById('week-host').value || '';
+      const longHole = document.getElementById('week-long-hole').value.trim();
+      const closestHole = document.getElementById('week-closest-hole').value.trim();
+      const coursePhotoInput = document.getElementById('week-course-photo');
+
+      if (!date) {
+        errorEl.textContent = 'Week start date is required.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (!course) {
+        errorEl.textContent = 'Course name is required.';
+        errorEl.style.display = 'block';
+        return;
+      }
+      if (!host) {
+        errorEl.textContent = 'Host is required.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      let coursePhoto = null;
+      if (coursePhotoInput && coursePhotoInput.files && coursePhotoInput.files[0]) {
+        try {
+          coursePhoto = await readFileAsDataURL(coursePhotoInput.files[0]);
+        } catch (err) {
+          console.error('Error reading course photo', err);
+          errorEl.textContent = 'Failed to read course photo. Try again or leave it blank.';
+          errorEl.style.display = 'block';
+          return;
+        }
+      }
+
+      const newWeek = {
+        id: uid(),
+        date,
+        course,
+        host,
+        longHole,
+        closestHole,
+        coursePhoto: coursePhoto,
+        longDriveWinner: null,
+        closestWinner: null,
+        results: []
+      };
+
+      state.weeks.push(newWeek);
+      saveState();
+      refreshAll();
+
+      form.reset();
+      alert('Week created. Now go to "Enter / Update Scores" to log results.');
+    });
+
+    setupWeekForm.refreshHosts = refreshHosts;
+  }
+
+  // ----- Scores form handling -----
+  function setupScoresForm() {
+    const weekSelect = document.getElementById('scores-week-select');
+    const form = document.getElementById('scores-form');
+
+    if (!weekSelect || !form) return;
+
+    weekSelect.addEventListener('change', () => {
+      const id = weekSelect.value;
+      renderScoresEditorForWeek(id);
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errorEl = document.getElementById('scores-form-error');
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
+
+      if (!state.weeks.length) {
+        errorEl.textContent = 'Create a week first.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const weekId = document.getElementById('scores-week-select').value;
+      const week = state.weeks.find(w => w.id === weekId);
+      if (!week) {
+        errorEl.textContent = 'Select a valid week.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (!state.players.length) {
+        errorEl.textContent = 'Add players in Settings first.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const existingResults = Array.isArray(week.results) ? week.results : [];
+      const playerNames = [...state.players];
+
+      const preserved = existingResults.filter(r => !playerNames.includes(r.player));
+      const updated = [];
+
+      let anyPlayed = false;
+
+      for (const player of playerNames) {
+        const idBase = playerToId(player);
+        const playedCheckbox = document.getElementById('score-played-' + idBase);
+        const strokesInput = document.getElementById('score-strokes-' + idBase);
+        const ldInput = document.getElementById('score-ld-' + idBase);
+        const ctpFeetInput = document.getElementById('score-ctp-ft-' + idBase);
+        const ctpInchesInput = document.getElementById('score-ctp-in-' + idBase);
+        const cardInput = document.getElementById('scorecard-file-' + idBase);
+
+        const existing = existingResults.find(r => r.player === player);
+
+        const played = playedCheckbox ? playedCheckbox.checked : false;
+        let strokes = strokesInput && strokesInput.value ? Number(strokesInput.value) : null;
+        let ldVal = ldInput && ldInput.value !== '' ? Number(ldInput.value) : null;
+
+        let ctpFeet = ctpFeetInput && ctpFeetInput.value !== '' ? Number(ctpFeetInput.value) : null;
+        let ctpInches = ctpInchesInput && ctpInchesInput.value !== '' ? Number(ctpInchesInput.value) : null;
+        let ctpTotalInches = null;
+
+        // If one of feet/inches is provided, treat missing as 0 (for convenience)
+        if (ctpFeet !== null || ctpInches !== null) {
+          if (ctpFeet === null) ctpFeet = 0;
+          if (ctpInches === null) ctpInches = 0;
+          if (isNaN(ctpFeet) || isNaN(ctpInches)) {
+            errorEl.textContent = `CTP distance for ${player} must be numeric or blank.`;
+            errorEl.style.display = 'block';
+            return;
+          }
+          if (ctpInches < 0 || ctpInches > 11) {
+            errorEl.textContent = `CTP inches for ${player} must be between 0 and 11.`;
+            errorEl.style.display = 'block';
+            return;
+          }
+          ctpTotalInches = ctpFeet * 12 + ctpInches;
+        }
+
+        if (played) {
+          anyPlayed = true;
+          if (strokes === null || isNaN(strokes)) {
+            errorEl.textContent = `Enter a numeric score for ${player} or uncheck "Played".`;
+            errorEl.style.display = 'block';
+            return;
+          }
+          if (ldVal !== null && isNaN(ldVal)) {
+            errorEl.textContent = `LD distance for ${player} must be numeric or blank.`;
+            errorEl.style.display = 'block';
+            return;
+          }
+        } else {
+          if (strokes !== null && isNaN(strokes)) {
+            errorEl.textContent = `Score for ${player} must be numeric or blank.`;
+            errorEl.style.display = 'block';
+            return;
+          }
+        }
+
+        let scorecardImage = existing?.scorecardImage || null;
+        if (cardInput && cardInput.files && cardInput.files[0]) {
+          try {
+            scorecardImage = await readFileAsDataURL(cardInput.files[0]);
+          } catch (err) {
+            console.error('Error reading scorecard image', err);
+            errorEl.textContent = `Failed to read scorecard image for ${player}. Try again or leave it blank.`;
+            errorEl.style.display = 'block';
+            return;
+          }
+        }
+
+        updated.push({
+          player,
+          played,
+          strokes: played ? strokes : null,
+          position: null,
+          longDriveDistance: (played && ldVal !== null && !isNaN(ldVal)) ? ldVal : null, // yards
+          closestDistance: (played && ctpTotalInches !== null && !isNaN(ctpTotalInches)) ? ctpTotalInches : null, // inches
+          scorecardImage
+        });
+      }
+
+      if (!anyPlayed) {
+        errorEl.textContent = 'At least one player must be marked as "Played" for this week.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      week.results = [...preserved, ...updated];
+
+      saveState();
+      refreshAll();
+      alert('Scores updated for this week.');
+    });
+  }
+
+  // ----- Tab switching -----
+  function setupTabs() {
+    const buttons = document.querySelectorAll('.tab-btn');
+    const views = document.querySelectorAll('.view');
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-view');
+        buttons.forEach(b => b.classList.remove('active'));
+        views.forEach(v => v.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(target).classList.add('active');
+      });
+    });
+  }
+
+  // ----- Settings events -----
+  function setupSettingsEvents() {
+    const addPlayerBtn = document.getElementById('add-player-btn');
+    const newPlayerInput = document.getElementById('new-player-name');
+    const playerError = document.getElementById('player-error');
+
+    addPlayerBtn.addEventListener('click', () => {
+      playerError.style.display = 'none';
+      playerError.textContent = '';
+
+      const name = newPlayerInput.value.trim();
+      if (!name) {
+        playerError.textContent = 'Player name cannot be empty.';
+        playerError.style.display = 'block';
+        return;
+      }
+      if (state.players.includes(name)) {
+        playerError.textContent = 'That player is already in the league.';
+        playerError.style.display = 'block';
+        return;
+      }
+
+      state.players.push(name);
+      saveState();
+      newPlayerInput.value = '';
+      refreshAll();
+    });
+
+    newPlayerInput.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        addPlayerBtn.click();
+      }
+    });
+
+    document.getElementById('save-scoring-btn').addEventListener('click', () => {
+      const p1 = Number(document.getElementById('score-1st').value || 0);
+      const p2 = Number(document.getElementById('score-2nd').value || 0);
+      const p3 = Number(document.getElementById('score-3rd').value || 0);
+      const p4 = Number(document.getElementById('score-4th').value || 0);
+      const participation = Number(document.getElementById('score-participation').value || 0);
+      const longDrive = Number(document.getElementById('score-long').value || 0);
+      const closestToPin = Number(document.getElementById('score-closest').value || 0);
+
+      state.scoring.placementPoints = { 1: p1, 2: p2, 3: p3, 4: p4 };
+      state.scoring.participation = participation;
+      state.scoring.longDrive = longDrive;
+      state.scoring.closestToPin = closestToPin;
+
+      saveState();
+      refreshAll();
+      alert('Scoring updated.');
+    });
+
+    document.getElementById('reset-scoring-btn').addEventListener('click', () => {
+      if (!confirm('Reset scoring to default values?')) return;
+      state.scoring = structuredClone(defaultState.scoring);
+      saveState();
+      refreshAll();
+    });
+
+    document.getElementById('reset-all-btn').addEventListener('click', () => {
+      if (!confirm('This will erase all players, weeks and scoring settings from this browser. Continue?')) return;
+      state = structuredClone(defaultState);
+      saveState();
+      refreshAll();
+    });
+  }
+
+  // ----- Global refresh -----
+  function refreshAll() {
+    renderHeaderMeta();
+    renderPlayersList();
+    renderScoringSettings();
+    if (setupWeekForm.refreshHosts) {
+      setupWeekForm.refreshHosts();
+    }
+    renderWeeksList();
+    renderLeaderboard();
+    renderScoresSection();
+  }
+
+  // ----- Init -----
+  document.addEventListener('DOMContentLoaded', () => {
+    setupTabs();
+    setupWeekForm();
+    setupScoresForm();
+    setupSettingsEvents();
+    refreshAll();
+  });
+</script>
+</body>
+</html>
