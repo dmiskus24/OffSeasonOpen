@@ -1,5 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en
+<!-- Firebase v8 (compat) SDKs -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <head>
   <meta charset="UTF-8" />
   <title>Offseason Golf League Tracker</title>
@@ -618,7 +622,17 @@
         </div>
       </div>
     </header>
-
+    <!-- Auth Bar -->
+    <div class="auth-bar" style="padding:8px 22px 0; display:flex; justify-content:space-between; align-items:center; gap:8px; font-size:0.8rem;">
+      <div id="auth-status" style="color:#9aa9bd;">
+        Not signed in (local-only mode)
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <button id="google-signin-btn" class="btn btn-ghost btn-sm">Sign in with Google</button>
+        <button id="anon-signin-btn" class="btn btn-ghost btn-sm">Play as guest</button>
+        <button id="signout-btn" class="btn btn-ghost btn-sm" style="display:none;">Sign out</button>
+      </div>
+    </div>
     <main>
       <div class="tabs">
         <button class="tab-btn active" data-view="leaderboard-view">
@@ -911,7 +925,7 @@
   </div>
 
   <script>
-  // ----- Data model & persistence -----
+  // ----- Data model & persistence (local) -----
   const STORAGE_KEY = 'offseason_golf_league_v1';
 
   const defaultState = {
@@ -924,8 +938,6 @@
       closestToPin: 1
     }
   };
-
-  let state = loadState();
 
   function loadState() {
     try {
@@ -953,8 +965,181 @@
     }
   }
 
-  function saveState() {
+  let state = loadState();
+
+  function saveStateLocal() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  // ----- Firebase integration -----
+  let firebaseApp = null;
+  let firebaseDb = null;
+  let firebaseAuth = null;
+  let firebaseEnabled = false;
+  let currentUser = null;
+  let leagueListenerRef = null;
+
+  // Choose a league id so all your buddies share the same data
+  const LEAGUE_ID = 'defaultLeague';
+
+  function initFirebase() {
+    // ⬇️ Replace this config with YOUR Firebase project's config from the Firebase console
+  const firebaseConfig = {
+  apiKey: "AIzaSyCTcxkTuBfXhAKkx1PHa-xKjKmo0QM7FC4",
+  authDomain: "offseasonopen.firebaseapp.com",
+  databaseURL: "https://offseasonopen-default-rtdb.firebaseio.com",
+  projectId: "offseasonopen",
+  storageBucket: "offseasonopen.firebasestorage.app",
+  messagingSenderId: "213022712394",
+  appId: "1:213022712394:web:697fd75037b51728f6bcb3",
+  measurementId: "G-EJY4QY9WJ8"
+};
+
+    try {
+      firebaseApp = firebase.initializeApp(firebaseConfig);
+      firebaseDb = firebase.database();
+      firebaseAuth = firebase.auth();
+      firebaseEnabled = true;
+
+      // Listen for login / logout
+      firebaseAuth.onAuthStateChanged(user => {
+        currentUser = user || null;
+        updateAuthUI(currentUser);
+        attachLeagueListener();
+      });
+    } catch (e) {
+      console.warn("Firebase init failed (check your config). Running in local-only mode.", e);
+      firebaseEnabled = false;
+      updateAuthUI(null);
+    }
+  }
+
+  function leagueRef() {
+    if (!firebaseEnabled) return null;
+    return firebaseDb.ref('leagues/' + LEAGUE_ID);
+  }
+
+  function attachLeagueListener() {
+    if (!firebaseEnabled) return;
+    const ref = leagueRef();
+    if (!ref) return;
+
+    // Detach old listener if any
+    if (leagueListenerRef) {
+      leagueListenerRef.off();
+      leagueListenerRef = null;
+    }
+
+    if (!currentUser) {
+      // Not signed in: we just use local state
+      return;
+    }
+
+    leagueListenerRef = ref;
+    ref.on('value', snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        // Merge remote state into local
+        state = {
+          players: data.players || [],
+          weeks: data.weeks || [],
+          scoring: data.scoring || structuredClone(defaultState.scoring)
+        };
+        // Cache locally without writing back to Firebase
+        saveStateLocal();
+        refreshAll();
+      } else {
+        // If nothing in DB yet, push our local current state as initial
+        saveStateToFirebase();
+      }
+    });
+  }
+
+  function saveStateToFirebase() {
+    if (!firebaseEnabled || !currentUser) return;
+    const ref = leagueRef();
+    if (!ref) return;
+
+    ref.set(state).catch(err => {
+      console.error("Error writing to Firebase:", err);
+    });
+  }
+
+  function saveState() {
+    // Called everywhere in the app when state changes
+    saveStateLocal();
+    saveStateToFirebase();
+  }
+
+  // ----- Auth UI -----
+  function updateAuthUI(user) {
+    const statusEl = document.getElementById('auth-status');
+    const googleBtn = document.getElementById('google-signin-btn');
+    const anonBtn = document.getElementById('anon-signin-btn');
+    const signoutBtn = document.getElementById('signout-btn');
+
+    if (!statusEl || !googleBtn || !anonBtn || !signoutBtn) return;
+
+    if (!firebaseEnabled) {
+      statusEl.textContent = 'Not signed in (Firebase not configured – using local-only mode)';
+      googleBtn.disabled = true;
+      anonBtn.disabled = true;
+      signoutBtn.style.display = 'none';
+      return;
+    }
+
+    googleBtn.disabled = false;
+    anonBtn.disabled = false;
+
+    if (user) {
+      if (user.isAnonymous) {
+        statusEl.textContent = 'Signed in as guest';
+      } else {
+        statusEl.textContent = `Signed in as ${user.displayName || user.email || 'user'}`;
+      }
+      signoutBtn.style.display = 'inline-flex';
+    } else {
+      statusEl.textContent = 'Not signed in (changes stored locally & won\'t sync)';
+      signoutBtn.style.display = 'none';
+    }
+  }
+
+  function setupAuthUI() {
+    const googleBtn = document.getElementById('google-signin-btn');
+    const anonBtn = document.getElementById('anon-signin-btn');
+    const signoutBtn = document.getElementById('signout-btn');
+
+    if (!googleBtn || !anonBtn || !signoutBtn) return;
+
+    googleBtn.addEventListener('click', () => {
+      if (!firebaseEnabled) {
+        alert('Firebase is not configured yet. Add your config in initFirebase().');
+        return;
+      }
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebaseAuth.signInWithPopup(provider).catch(err => {
+        console.error('Google sign-in error:', err);
+        alert('Failed to sign in with Google. Check console for details.');
+      });
+    });
+
+    anonBtn.addEventListener('click', () => {
+      if (!firebaseEnabled) {
+        alert('Firebase is not configured yet. Add your config in initFirebase().');
+        return;
+      }
+      firebaseAuth.signInAnonymously().catch(err => {
+        console.error('Anonymous sign-in error:', err);
+        alert('Failed to sign in anonymously. Check console for details.');
+      });
+    });
+
+    signoutBtn.addEventListener('click', () => {
+      if (!firebaseEnabled) return;
+      firebaseAuth.signOut().catch(err => {
+        console.error('Sign-out error:', err);
+      });
+    });
   }
 
   // ----- Helpers -----
@@ -1131,7 +1316,7 @@
       // LD & CTP auto winners
       const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
       week.longDriveWinner = longWinnerName || null;
-      week.closestWinner = closestWinnerName || null; // <-- fixed name here
+      week.closestWinner = closestWinnerName || null;
 
       if (longWinnerName && scores[longWinnerName]) {
         scores[longWinnerName].points += state.scoring.longDrive;
@@ -1927,8 +2112,11 @@
     setupWeekForm();
     setupScoresForm();
     setupSettingsEvents();
+    setupAuthUI();
+    initFirebase();      // setup Firebase + auth + DB
     refreshAll();
   });
 </script>
 </body>
 </html>
+
