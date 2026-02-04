@@ -32,9 +32,7 @@
       --input-bg: #0f1b26;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -78,6 +76,7 @@
       display: flex;
       flex-direction: column;
       gap: 3px;
+      min-width: 0;
     }
 
     h1 {
@@ -88,6 +87,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      flex-wrap: wrap;
     }
 
     h1 span.badge {
@@ -123,6 +123,7 @@
       align-items: center;
       gap: 6px;
       background: rgba(4,11,19,0.8);
+      white-space: nowrap;
     }
 
     .header-pill-dot {
@@ -142,6 +143,7 @@
       display: flex;
       flex-direction: column;
       gap: 14px;
+      min-width: 0;
     }
 
     /* Tabs */
@@ -153,7 +155,12 @@
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.09);
       align-self: flex-start;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .tabs::-webkit-scrollbar { display: none; }
 
     .tab-btn {
       border: none;
@@ -169,6 +176,8 @@
       align-items: center;
       gap: 6px;
       transition: background 0.2s, color 0.2s, transform 0.1s;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     .tab-btn span.dot {
@@ -193,6 +202,7 @@
       margin-top: 6px;
       flex: 1;
       display: grid;
+      min-width: 0;
     }
 
     .view {
@@ -200,11 +210,10 @@
       grid-template-columns: minmax(0,1fr);
       gap: 14px;
       align-content: flex-start;
+      min-width: 0;
     }
 
-    .view.active {
-      display: grid;
-    }
+    .view.active { display: grid; }
 
     /* Cards & layout */
     .card {
@@ -213,6 +222,7 @@
       padding: 14px 14px 12px;
       border: 1px solid rgba(255,255,255,0.06);
       box-shadow: 0 8px 26px rgba(0,0,0,0.35);
+      min-width: 0;
     }
 
     .card-header {
@@ -221,6 +231,7 @@
       align-items: center;
       gap: 8px;
       margin-bottom: 8px;
+      flex-wrap: wrap;
     }
 
     .card-title {
@@ -241,6 +252,7 @@
       font-size: 0.72rem;
       border: 1px solid rgba(255,255,255,0.16);
       color: var(--text-muted);
+      white-space: nowrap;
     }
 
     .pill-accent {
@@ -255,46 +267,22 @@
       background: rgba(255,190,61,0.14);
     }
 
-    /* Leaderboard */
-    .leaderboard-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .stat-chip {
-      padding: 5px 9px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.12);
-      background: rgba(7,15,24,0.9);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .stat-label {
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      font-size: 0.7rem;
-      opacity: 0.7;
-    }
-
-    .stat-value {
-      font-weight: 500;
+    /* Tables */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      border-radius: var(--radius-sm);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.8rem;
+      min-width: 640px; /* lets mobile scroll instead of squish */
     }
 
-    thead {
-      background: rgba(5,13,21,0.9);
-    }
+    thead { background: rgba(5,13,21,0.9); }
 
     th, td {
       text-align: left;
@@ -310,13 +298,8 @@
       color: var(--text-muted);
     }
 
-    tbody tr:nth-child(even) td {
-      background: rgba(255,255,255,0.01);
-    }
-
-    tbody tr.highlight td {
-      background: rgba(64,196,99,0.08);
-    }
+    tbody tr:nth-child(even) td { background: rgba(255,255,255,0.01); }
+    tbody tr.highlight td { background: rgba(64,196,99,0.08); }
 
     .rank-badge {
       min-width: 18px;
@@ -329,23 +312,9 @@
       border: 1px solid rgba(255,255,255,0.3);
     }
 
-    .rank-1 {
-      border-color: rgba(255,215,0,0.9);
-      color: #ffe98c;
-      background: rgba(255,215,0,0.1);
-    }
-
-    .rank-2 {
-      border-color: rgba(192,192,192,0.9);
-      color: #e3e7eb;
-      background: rgba(192,192,192,0.08);
-    }
-
-    .rank-3 {
-      border-color: rgba(205,127,50,0.9);
-      color: #ffd4a2;
-      background: rgba(205,127,50,0.08);
-    }
+    .rank-1 { border-color: rgba(255,215,0,0.9); color: #ffe98c; background: rgba(255,215,0,0.1); }
+    .rank-2 { border-color: rgba(192,192,192,0.9); color: #e3e7eb; background: rgba(192,192,192,0.08); }
+    .rank-3 { border-color: rgba(205,127,50,0.9); color: #ffd4a2; background: rgba(205,127,50,0.08); }
 
     /* Forms */
     .form-grid {
@@ -355,9 +324,7 @@
     }
 
     @media (max-width: 800px) {
-      .form-grid {
-        grid-template-columns: minmax(0,1fr);
-      }
+      .form-grid { grid-template-columns: minmax(0,1fr); }
     }
 
     .field-group {
@@ -365,6 +332,7 @@
       display: flex;
       flex-direction: column;
       gap: 4px;
+      min-width: 0;
     }
 
     label {
@@ -381,22 +349,22 @@
       background: var(--input-bg);
       border-radius: var(--radius-sm);
       border: 1px solid rgba(255,255,255,0.1);
-      padding: 7px 9px;
-      font-size: 0.82rem;
+      padding: 10px 10px;            /* a bit taller for mobile */
+      font-size: 16px;               /* prevents mobile zoom + improves tap */
       color: var(--text-main);
       outline: none;
       transition: border 0.2s, box-shadow 0.2s, background 0.2s;
+      min-height: 44px;              /* tap target */
+      width: 100%;
+      max-width: 100%;
     }
 
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
+    /* Helps Edge/Chrome render native date picker nicely on dark UI */
+    input[type="date"] { color-scheme: dark; }
 
+    input[type="number"] { -moz-appearance: textfield; }
     input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
     input:focus,
     select:focus {
@@ -410,6 +378,7 @@
       gap: 8px;
       align-items: center;
       flex-wrap: wrap;
+      min-width: 0;
     }
 
     .player-results-table {
@@ -428,21 +397,10 @@
       font-size: 0.78rem;
     }
 
-    .player-results-table tbody tr:last-child td {
-      border-bottom: none;
-    }
-
-    .player-name-cell {
-      font-weight: 500;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    .checkbox-cell input[type="checkbox"] {
-      transform: scale(1.05);
-    }
+    .player-results-table tbody tr:last-child td { border-bottom: none; }
+    .player-name-cell { font-weight: 500; }
+    .center { text-align: center; }
+    .checkbox-cell input[type="checkbox"] { transform: scale(1.05); }
 
     /* Weeks list */
     .weeks-list {
@@ -476,38 +434,16 @@
       flex-wrap: wrap;
       gap: 6px;
       align-items: baseline;
+      min-width: 0;
     }
 
-    .week-course {
-      font-weight: 600;
-      font-size: 0.88rem;
-    }
+    .week-course { font-weight: 600; font-size: 0.88rem; }
+    .week-meta { font-size: 0.75rem; color: var(--text-muted); }
 
-    .week-meta {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
-
-    .week-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    .week-body {
-      margin-top: 4px;
-    }
-
-    .week-body small {
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
-
-    .week-body table {
-      margin-top: 4px;
-      font-size: 0.76rem;
-    }
-
+    .week-pills { display: flex; flex-wrap: wrap; gap: 4px; }
+    .week-body { margin-top: 4px; }
+    .week-body small { font-size: 0.72rem; color: var(--text-muted); }
+    .week-body table { margin-top: 4px; font-size: 0.76rem; }
     .week-footer {
       margin-top: 5px;
       display: flex;
@@ -516,12 +452,10 @@
       gap: 6px;
       font-size: 0.74rem;
       color: var(--text-muted);
+      flex-wrap: wrap;
     }
 
-    .course-photo-thumb {
-      margin-top: 6px;
-    }
-
+    .course-photo-thumb { margin-top: 6px; }
     .course-photo-thumb img {
       max-width: 100%;
       max-height: 180px;
@@ -531,11 +465,7 @@
       object-fit: cover;
     }
 
-    .small-note {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
+    .small-note { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
 
     /* Settings */
     .settings-grid {
@@ -545,9 +475,7 @@
     }
 
     @media (max-width: 800px) {
-      .settings-grid {
-        grid-template-columns: minmax(0,1fr);
-      }
+      .settings-grid { grid-template-columns: minmax(0,1fr); }
     }
 
     .pill-tag {
@@ -559,6 +487,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      margin: 4px 6px 0 0;
     }
 
     .pill-tag button {
@@ -570,23 +499,9 @@
       padding: 0;
     }
 
-    .settings-hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .error-text {
-      margin-top: 4px;
-      font-size: 0.75rem;
-      color: var(--danger);
-    }
-
-    .empty-state {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      padding: 8px 6px;
-    }
+    .settings-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+    .error-text { margin-top: 4px; font-size: 0.75rem; color: var(--danger); }
+    .empty-state { font-size: 0.8rem; color: var(--text-muted); padding: 8px 6px; }
 
     .subtle-separator {
       height: 1px;
@@ -595,30 +510,34 @@
       border-radius: 999px;
     }
 
-    /* Simple button styling (so the new buttons look decent) */
+    /* Buttons */
     .btn {
       border-radius: 999px;
       border: 1px solid rgba(255,255,255,0.18);
-      padding: 6px 12px;
+      padding: 10px 14px;
       font-size: 0.78rem;
       background: rgba(8,16,25,0.9);
       color: var(--text-main);
       cursor: pointer;
+      min-height: 44px; /* tap target */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
-    .btn-sm {
-      padding: 4px 10px;
-      font-size: 0.75rem;
-    }
-    .btn-primary {
-      background: var(--accent-strong);
-      border-color: rgba(64,196,99,0.9);
-    }
-    .btn-ghost {
-      background: transparent;
-    }
-    .btn-danger {
-      background: #802525;
-      border-color: #ff5e5e;
+    .btn-sm { padding: 8px 12px; font-size: 0.75rem; min-height: 38px; }
+    .btn-primary { background: var(--accent-strong); border-color: rgba(64,196,99,0.9); }
+    .btn-ghost { background: transparent; }
+    .btn-danger { background: #802525; border-color: #ff5e5e; }
+
+    /* Mobile header/auth layout polish */
+    @media (max-width: 640px) {
+      .app-shell { margin: 10px; border-radius: 22px; }
+      header { padding: 14px 14px; flex-direction: column; align-items: flex-start; }
+      .header-meta { justify-content: flex-start; }
+      main { padding: 14px 12px 16px; }
+      h1 { font-size: 1.15rem; }
+      .auth-bar { padding-left: 14px !important; padding-right: 14px !important; flex-direction: column; align-items: flex-start !important; }
     }
   </style>
 </head>
@@ -730,6 +649,9 @@
                   <div class="field-group">
                     <label for="week-date">Week start date (week of)</label>
                     <input type="date" id="week-date" required />
+                    <div class="settings-hint">
+                      If Edge ever fails to open the picker, tap the field and use the keyboard to type: <strong>YYYY-MM-DD</strong>.
+                    </div>
                   </div>
 
                   <div class="field-group">
@@ -743,11 +665,11 @@
                   </div>
 
                   <div class="field-group inline">
-                    <div style="flex: 1;">
+                    <div style="flex: 1; min-width: 0;">
                       <label for="week-long-hole">Longest drive hole (optional)</label>
                       <input type="text" id="week-long-hole" placeholder="e.g. 5" />
                     </div>
-                    <div style="flex: 1;">
+                    <div style="flex: 1; min-width: 0;">
                       <label for="week-closest-hole">Closest to pin hole (optional)</label>
                       <input type="text" id="week-closest-hole" placeholder="e.g. 12" />
                     </div>
@@ -900,21 +822,21 @@
                 <div class="field-group">
                   <label>Placement points</label>
                   <div class="inline">
-                    <div style="flex:1;">
+                    <div style="flex:1; min-width: 0;">
                       <div class="settings-hint">1st place</div>
                       <input type="number" id="score-1st" min="0" step="1" />
                     </div>
-                    <div style="flex:1;">
+                    <div style="flex:1; min-width: 0;">
                       <div class="settings-hint">2nd place</div>
                       <input type="number" id="score-2nd" min="0" step="1" />
                     </div>
                   </div>
                   <div class="inline" style="margin-top:6px;">
-                    <div style="flex:1;">
+                    <div style="flex:1; min-width: 0;">
                       <div class="settings-hint">3rd place</div>
                       <input type="number" id="score-3rd" min="0" step="1" />
                     </div>
-                    <div style="flex:1;">
+                    <div style="flex:1; min-width: 0;">
                       <div class="settings-hint">4th place</div>
                       <input type="number" id="score-4th" min="0" step="1" />
                     </div>
@@ -922,15 +844,15 @@
                 </div>
 
                 <div class="field-group inline">
-                  <div style="flex:1;">
+                  <div style="flex:1; min-width: 0;">
                     <label>Participation</label>
                     <input type="number" id="score-participation" min="0" step="1" />
                   </div>
-                  <div style="flex:1;">
+                  <div style="flex:1; min-width: 0;">
                     <label>Longest drive bonus</label>
                     <input type="number" id="score-long" min="0" step="1" />
                   </div>
-                  <div style="flex:1;">
+                  <div style="flex:1; min-width: 0;">
                     <label>Closest to pin bonus</label>
                     <input type="number" id="score-closest" min="0" step="1" />
                   </div>
@@ -957,6 +879,12 @@
   </div>
 
   <script>
+  // ===== Compatibility helpers (Edge-safe) =====
+  // structuredClone is supported in modern browsers, but this keeps things safe on older Edge.
+  if (typeof structuredClone !== 'function') {
+    window.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
+  }
+
   // ----- Data model & persistence (local + seasons) -----
   const STORAGE_KEY = 'offseason_golf_league_v2';
 
@@ -1031,7 +959,6 @@
 
   let state = loadState();
   let editingWeekId = null; // null = creating new week, not editing
-
 
   function getActiveSeasonId() {
     if (!state.seasons || !state.seasons.length) {
@@ -1213,20 +1140,26 @@
   }
 
   // ----- Helpers -----
-  function uid() {
-    return 'w_' + Math.random().toString(36).slice(2, 10);
-  }
+  function uid() { return 'w_' + Math.random().toString(36).slice(2, 10); }
+  function sid() { return 's_' + Math.random().toString(36).slice(2, 10); }
 
-  function sid() {
-    return 's_' + Math.random().toString(36).slice(2, 10);
+  // Edge-safe: build dates without relying on browser parsing quirks
+  function parseYYYYMMDD(dateStr) {
+    if (!dateStr || typeof dateStr !== 'string') return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+    if (!m) return null;
+    const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+    const dt = new Date(y, mo, d);
+    if (isNaN(dt.getTime())) return null;
+    return dt;
   }
 
   function formatWeekRange(dateStr) {
     if (!dateStr) return 'No date';
-    const start = new Date(dateStr + 'T00:00:00');
-    if (isNaN(start.getTime())) return dateStr;
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
+    const start = parseYYYYMMDD(dateStr);
+    if (!start) return dateStr;
+
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
 
     const shortOpts = { month: 'short', day: 'numeric' };
     const longOpts = { month: 'short', day: 'numeric', year: 'numeric' };
@@ -1251,40 +1184,25 @@
   }
 
   function renamePlayer(oldName, newName) {
-  if (!newName || oldName === newName) return;
+    if (!newName || oldName === newName) return;
 
-  // Update players array
-  state.players = state.players.map(p => (p === oldName ? newName : p));
+    state.players = state.players.map(p => (p === oldName ? newName : p));
 
-  // Update all weeks
-  state.weeks.forEach(week => {
-    // Host name
-    if (week.host === oldName) {
-      week.host = newName;
-    }
+    state.weeks.forEach(week => {
+      if (week.host === oldName) week.host = newName;
+      if (Array.isArray(week.results)) {
+        week.results.forEach(r => {
+          if (r.player === oldName) r.player = newName;
+        });
+      }
+      if (week.longDriveWinner === oldName) week.longDriveWinner = newName;
+      if (week.closestWinner === oldName) week.closestWinner = newName;
+    });
 
-    // Results array (player names)
-    if (Array.isArray(week.results)) {
-      week.results.forEach(r => {
-        if (r.player === oldName) {
-          r.player = newName;
-        }
-      });
-    }
+    saveState();
+    refreshAll();
+  }
 
-    // LD / CTP winners stored on the week
-    if (week.longDriveWinner === oldName) {
-      week.longDriveWinner = newName;
-    }
-    if (week.closestWinner === oldName) {
-      week.closestWinner = newName;
-    }
-  });
-
-  saveState();
-  refreshAll();
-}
-    
   function positionSuffix(n) {
     if (n === 1) return 'st';
     if (n === 2) return 'nd';
@@ -1306,6 +1224,32 @@
     const feet = Math.floor(totalInches / 12);
     const inches = Math.round(totalInches % 12);
     return `${feet}' ${inches}"`;
+  }
+
+  // Host dropdown: always keep in sync (fixes mobile “Add players in Settings” bug)
+  function populateWeekHostSelect(selectedValue) {
+    const hostSelect = document.getElementById('week-host');
+    if (!hostSelect) return;
+
+    if (!state.players.length) {
+      hostSelect.innerHTML = '<option value="">Add players in Settings</option>';
+      hostSelect.disabled = true;
+      return;
+    }
+
+    hostSelect.disabled = false;
+    const prev = selectedValue ?? hostSelect.value;
+
+    hostSelect.innerHTML = state.players.map(p => {
+      const escaped = p.replace(/"/g, '&quot;');
+      return `<option value="${escaped}">${escaped}</option>`;
+    }).join('');
+
+    if (prev && state.players.includes(prev)) {
+      hostSelect.value = prev;
+    } else {
+      hostSelect.value = state.players[0];
+    }
   }
 
   // Determine LD/CTP winners for a week from distances
@@ -1337,10 +1281,7 @@
       }
     }
 
-    return {
-      longWinnerName: longWinner,
-      closestWinnerName: closestWinner
-    };
+    return { longWinnerName: longWinner, closestWinnerName: closestWinner };
   }
 
   // ----- Leaderboard calculation (per active season) -----
@@ -1401,9 +1342,7 @@
           if (r.position) {
             const basePoints = placementPoints[r.position] || 0;
             scores[r.player].points += basePoints;
-            if (r.position === 1) {
-              scores[r.player].wins += 1;
-            }
+            if (r.position === 1) scores[r.player].wins += 1;
           }
 
           scores[r.player].points += state.scoring.participation;
@@ -1438,12 +1377,7 @@
       const avgStrokes = s.roundsCount > 0 ? s.totalStrokes / s.roundsCount : null;
       const avgLdYards = s.ldAttempts > 0 ? s.totalLdYards / s.ldAttempts : null;
       const avgCtpFeet = s.ctpAttempts > 0 ? (s.totalCtpInches / s.ctpAttempts) / 12 : null;
-      return {
-        ...s,
-        avgStrokes,
-        avgLdYards,
-        avgCtpFeet
-      };
+      return { ...s, avgStrokes, avgLdYards, avgCtpFeet };
     });
 
     arr.sort((a, b) => {
@@ -1485,22 +1419,23 @@
     }
 
     let html = `
-      <table>
-        <thead>
-          <tr>
-            <th style="width:32px;">#</th>
-            <th>Player</th>
-            <th>Pts</th>
-            <th>Weeks</th>
-            <th>Wins</th>
-            <th>LD wins</th>
-            <th>CTP wins</th>
-            <th>Avg Score</th>
-            <th>Avg LD (yd)</th>
-            <th>Avg CTP (ft)</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:32px;">#</th>
+              <th>Player</th>
+              <th>Pts</th>
+              <th>Weeks</th>
+              <th>Wins</th>
+              <th>LD wins</th>
+              <th>CTP wins</th>
+              <th>Avg Score</th>
+              <th>Avg LD (yd)</th>
+              <th>Avg CTP (ft)</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
 
     leaderboard.forEach((row, index) => {
@@ -1526,199 +1461,196 @@
       `;
     });
 
-    html += '</tbody></table>';
+    html += '</tbody></table></div>';
     container.innerHTML = html;
   }
 
   // ----- Rendering: Weeks -----
   function startEditWeek(weekId) {
-  const week = state.weeks.find(w => w.id === weekId);
-  if (!week) return;
+    const week = state.weeks.find(w => w.id === weekId);
+    if (!week) return;
 
-  editingWeekId = weekId;
+    editingWeekId = weekId;
 
-  const dateInput = document.getElementById('week-date');
-  const courseInput = document.getElementById('week-course');
-  const hostSelect = document.getElementById('week-host');
-  const longInput = document.getElementById('week-long-hole');
-  const closestInput = document.getElementById('week-closest-hole');
-  const submitBtn = document.querySelector('#week-form button[type="submit"]');
+    const dateInput = document.getElementById('week-date');
+    const courseInput = document.getElementById('week-course');
+    const hostSelect = document.getElementById('week-host');
+    const longInput = document.getElementById('week-long-hole');
+    const closestInput = document.getElementById('week-closest-hole');
+    const submitBtn = document.querySelector('#week-form button[type="submit"]');
 
-  if (dateInput) dateInput.value = week.date || '';
-  if (courseInput) courseInput.value = week.course || '';
-  if (hostSelect && week.host) hostSelect.value = week.host;
-  if (longInput) longInput.value = week.longHole || '';
-  if (closestInput) closestInput.value = week.closestHole || '';
-  if (submitBtn) submitBtn.textContent = 'Update week';
+    if (dateInput) dateInput.value = week.date || '';
+    if (courseInput) courseInput.value = week.course || '';
 
-  // Switch to Weeks tab & scroll to the form
-  document.querySelector('.tab-btn[data-view="weeks-view"]')?.click();
-  document.getElementById('weeks-view')?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
-}
+    // Ensure host options exist BEFORE setting value (fixes mobile host select)
+    populateWeekHostSelect(week.host || null);
+
+    if (hostSelect && week.host) hostSelect.value = week.host;
+    if (longInput) longInput.value = week.longHole || '';
+    if (closestInput) closestInput.value = week.closestHole || '';
+    if (submitBtn) submitBtn.textContent = 'Update week';
+
+    document.querySelector('.tab-btn[data-view="weeks-view"]')?.click();
+    document.getElementById('weeks-view')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   function renderWeeksList() {
-  const container = document.getElementById('weeks-list-container');
-  const weeksInSeason = getWeeksForActiveSeason();
+    const container = document.getElementById('weeks-list-container');
+    const weeksInSeason = getWeeksForActiveSeason();
 
-  if (!weeksInSeason.length) {
-    container.innerHTML = '<div class="empty-state">No weeks recorded yet in this season. Create a week above to start your tour.</div>';
-    return;
-  }
+    if (!weeksInSeason.length) {
+      container.innerHTML = '<div class="empty-state">No weeks recorded yet in this season. Create a week above to start your tour.</div>';
+      return;
+    }
 
-  const weeksSorted = [...weeksInSeason].sort((a, b) => {
-    if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
-    return (b.date || '').localeCompare(a.date || '');
-  });
+    const weeksSorted = [...weeksInSeason].sort((a, b) => {
+      if ((a.date || '') === (b.date || '')) return b.id.localeCompare(a.id);
+      return (b.date || '').localeCompare(a.date || '');
+    });
 
-  let html = '<div class="weeks-list">';
+    let html = '<div class="weeks-list">';
 
-  for (const week of weeksSorted) {
-    const playedCount = (week.results || []).filter(r => r.played).length;
-    const weekLabel = week.date ? formatWeekRange(week.date) : 'No date';
-    const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
-    const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
+    for (const week of weeksSorted) {
+      const playedCount = (week.results || []).filter(r => r.played).length;
+      const weekLabel = week.date ? formatWeekRange(week.date) : 'No date';
+      const longLabel = week.longHole ? `LD: Hole ${week.longHole}` : 'LD: —';
+      const closestLabel = week.closestHole ? `CTP: Hole ${week.closestHole}` : 'CTP: —';
 
-    const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
-    const ldWinner = longWinnerName || week.longDriveWinner || null;
-    const ctpWinner = closestWinnerName || week.closestWinner || null;
+      const { longWinnerName, closestWinnerName } = computeBonusWinners(week);
+      const ldWinner = longWinnerName || week.longDriveWinner || null;
+      const ctpWinner = closestWinnerName || week.closestWinner || null;
 
-    let ldDistDisplay = '—';
-    let ctpDistDisplay = '—';
-    if (ldWinner) {
-      const r = (week.results || []).find(x => x.player === ldWinner);
-      if (r && typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
-        ldDistDisplay = `${r.longDriveDistance.toFixed(1)} yd`;
+      let ldDistDisplay = '—';
+      let ctpDistDisplay = '—';
+      if (ldWinner) {
+        const r = (week.results || []).find(x => x.player === ldWinner);
+        if (r && typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance)) {
+          ldDistDisplay = `${r.longDriveDistance.toFixed(1)} yd`;
+        }
       }
-    }
-    if (ctpWinner) {
-      const r = (week.results || []).find(x => x.player === ctpWinner);
-      if (r && typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
-        ctpDistDisplay = formatFeetInches(r.closestDistance);
+      if (ctpWinner) {
+        const r = (week.results || []).find(x => x.player === ctpWinner);
+        if (r && typeof r.closestDistance === 'number' && !isNaN(r.closestDistance)) {
+          ctpDistDisplay = formatFeetInches(r.closestDistance);
+        }
       }
-    }
-
-    html += `
-      <div class="week-card">
-        <div class="week-header-line">
-          <div class="week-main-info">
-            <span class="week-course">${week.course || 'Unknown course'}</span>
-            <span class="week-meta">• Week of ${weekLabel}</span>
-            <span class="week-meta">• Host: ${week.host || '—'}</span>
-          </div>
-          <div class="week-pills">
-            <span class="pill">${playedCount} played</span>
-            <span class="pill pill-accent">${longLabel}</span>
-            <span class="pill pill-accent">${closestLabel}</span>
-          </div>
-        </div>
-        <div class="week-body">
-    `;
-
-    if (week.coursePhoto) {
-      html += `
-        <small>Course settings photo:</small>
-        <div class="course-photo-thumb">
-          <img src="${week.coursePhoto}" alt="Course settings photo" />
-        </div>
-      `;
-    } else {
-      html += `<small>No course settings photo uploaded.</small>`;
-    }
-
-    html += `
-          <table>
-            <thead>
-              <tr>
-                <th>Player</th>
-                <th>Score</th>
-                <th>Finish</th>
-                <th>Played</th>
-                <th>LD (yd)</th>
-                <th>CTP</th>
-                <th>Card</th>
-              </tr>
-            </thead>
-            <tbody>
-    `;
-
-    const byName = [...(week.results || [])].sort((a, b) => a.player.localeCompare(b.player));
-
-    for (const r of byName) {
-      const pos = r.position ? `${r.position}${positionSuffix(r.position)}` : '—';
-      const scoreDisplay = (typeof r.strokes === 'number' && !isNaN(r.strokes)) ? r.strokes : '—';
-      const ldDisplay = (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance))
-        ? `${r.longDriveDistance.toFixed(1)}`
-        : '—';
-      const ctpDisplay = (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance))
-        ? formatFeetInches(r.closestDistance)
-        : '—';
-      const hasCard = !!r.scorecardImage;
-      const cardCell = hasCard
-        ? `<a href="${r.scorecardImage}" target="_blank">View</a>`
-        : '—';
 
       html += `
-        <tr>
-          <td>${r.player}</td>
-          <td>${scoreDisplay}</td>
-          <td>${pos}</td>
-          <td>${r.played ? 'Yes' : 'No'}</td>
-          <td>${ldDisplay}</td>
-          <td>${ctpDisplay}</td>
-          <td>${cardCell}</td>
-        </tr>
+        <div class="week-card">
+          <div class="week-header-line">
+            <div class="week-main-info">
+              <span class="week-course">${week.course || 'Unknown course'}</span>
+              <span class="week-meta">• Week of ${weekLabel}</span>
+              <span class="week-meta">• Host: ${week.host || '—'}</span>
+            </div>
+            <div class="week-pills">
+              <span class="pill">${playedCount} played</span>
+              <span class="pill pill-accent">${longLabel}</span>
+              <span class="pill pill-accent">${closestLabel}</span>
+            </div>
+          </div>
+          <div class="week-body">
+      `;
+
+      if (week.coursePhoto) {
+        html += `
+          <small>Course settings photo:</small>
+          <div class="course-photo-thumb">
+            <img src="${week.coursePhoto}" alt="Course settings photo" />
+          </div>
+        `;
+      } else {
+        html += `<small>No course settings photo uploaded.</small>`;
+      }
+
+      html += `
+            <div class="table-wrap" style="margin-top:8px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Score</th>
+                    <th>Finish</th>
+                    <th>Played</th>
+                    <th>LD (yd)</th>
+                    <th>CTP</th>
+                    <th>Card</th>
+                  </tr>
+                </thead>
+                <tbody>
+      `;
+
+      const byName = [...(week.results || [])].sort((a, b) => a.player.localeCompare(b.player));
+
+      for (const r of byName) {
+        const pos = r.position ? `${r.position}${positionSuffix(r.position)}` : '—';
+        const scoreDisplay = (typeof r.strokes === 'number' && !isNaN(r.strokes)) ? r.strokes : '—';
+        const ldDisplay = (typeof r.longDriveDistance === 'number' && !isNaN(r.longDriveDistance))
+          ? `${r.longDriveDistance.toFixed(1)}`
+          : '—';
+        const ctpDisplay = (typeof r.closestDistance === 'number' && !isNaN(r.closestDistance))
+          ? formatFeetInches(r.closestDistance)
+          : '—';
+        const hasCard = !!r.scorecardImage;
+        const cardCell = hasCard
+          ? `<a href="${r.scorecardImage}" target="_blank" rel="noopener noreferrer">View</a>`
+          : '—';
+
+        html += `
+          <tr>
+            <td>${r.player}</td>
+            <td>${scoreDisplay}</td>
+            <td>${pos}</td>
+            <td>${r.played ? 'Yes' : 'No'}</td>
+            <td>${ldDisplay}</td>
+            <td>${ctpDisplay}</td>
+            <td>${cardCell}</td>
+          </tr>
+        `;
+      }
+
+      html += `
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="week-footer">
+            <span>
+              LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
+              CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
+            </span>
+            <div class="inline">
+              <button class="btn btn-sm btn-ghost" data-edit-week="${week.id}">Edit</button>
+              <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
+            </div>
+          </div>
+        </div>
       `;
     }
 
-    html += `
-            </tbody>
-          </table>
-        </div>
-        <div class="week-footer">
-          <span>
-            LD winner: <strong>${ldWinner || '—'}</strong> (${ldDistDisplay}) •
-            CTP winner: <strong>${ctpWinner || '—'}</strong> (${ctpDistDisplay})
-          </span>
-          <div>
-            <button class="btn btn-sm btn-ghost" data-edit-week="${week.id}">Edit</button>
-            <button class="btn btn-sm btn-ghost" data-delete-week="${week.id}">Delete</button>
-          </div>
-        </div>
-      </div>
-    `;
+    html += '</div>';
+    container.innerHTML = html;
+
+    container.querySelectorAll('[data-delete-week]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-delete-week');
+        if (!confirm("Delete this week from the log?")) return;
+        state.weeks = state.weeks.filter(w => w.id !== id);
+        saveState();
+        refreshAll();
+      });
+    });
+
+    container.querySelectorAll('[data-edit-week]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-edit-week');
+        startEditWeek(id);
+      });
+    });
   }
-
-  html += '</div>';
-  container.innerHTML = html;
-
-  // Hook up delete buttons
-  container.querySelectorAll('[data-delete-week]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-delete-week');
-      if (!confirm("Delete this week from the log?")) return;
-      state.weeks = state.weeks.filter(w => w.id !== id);
-      saveState();
-      refreshAll();
-    });
-  });
-
-  // Hook up edit buttons
-  container.querySelectorAll('[data-edit-week]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-edit-week');
-      startEditWeek(id);
-    });
-  });
-}
-
 
   // ----- Scores editor (per week, per season) -----
-  function renderScoresSection() {
-    renderScoresWeekOptions();
-  }
+  function renderScoresSection() { renderScoresWeekOptions(); }
 
   function renderScoresWeekOptions() {
     const weekSelect = document.getElementById('scores-week-select');
@@ -1777,43 +1709,40 @@
     const playersUnion = [...state.players];
 
     for (const r of existingResults) {
-      if (!playersUnion.includes(r.player)) {
-        playersUnion.push(r.player);
-      }
+      if (!playersUnion.includes(r.player)) playersUnion.push(r.player);
     }
 
     let tableHtml = `
-      <table class="player-results-table">
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th class="center">Played</th>
-            <th class="center">Score</th>
-            <th class="center">LD (yd)</th>
-            <th class="center">CTP ft</th>
-            <th class="center">CTP in</th>
-            <th class="center">Scorecard</th>
-          </tr>
-        </thead>
-        <tbody>
+      <div class="table-wrap">
+        <table class="player-results-table">
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th class="center">Played</th>
+              <th class="center">Score</th>
+              <th class="center">LD (yd)</th>
+              <th class="center">CTP ft</th>
+              <th class="center">CTP in</th>
+              <th class="center">Scorecard</th>
+            </tr>
+          </thead>
+          <tbody>
     `;
 
     for (const player of playersUnion) {
       const safeId = playerToId(player);
       const existing = existingResults.find(r => r.player === player);
       const played = existing?.played ?? false;
-      const strokes = (typeof existing?.strokes === 'number' && !isNaN(existing.strokes))
-        ? existing.strokes
-        : '';
-      const ld = (typeof existing?.longDriveDistance === 'number' && !isNaN(existing.longDriveDistance))
-        ? existing.longDriveDistance
-        : '';
+      const strokes = (typeof existing?.strokes === 'number' && !isNaN(existing.strokes)) ? existing.strokes : '';
+      const ld = (typeof existing?.longDriveDistance === 'number' && !isNaN(existing.longDriveDistance)) ? existing.longDriveDistance : '';
+
       let ctpFeet = '';
       let ctpInches = '';
       if (typeof existing?.closestDistance === 'number' && !isNaN(existing.closestDistance)) {
         ctpFeet = Math.floor(existing.closestDistance / 12);
         ctpInches = Math.round(existing.closestDistance % 12);
       }
+
       const hasCard = !!existing?.scorecardImage;
 
       tableHtml += `
@@ -1826,14 +1755,14 @@
             <input type="number"
                    id="score-strokes-${safeId}"
                    placeholder="73"
-                   style="width: 80px; text-align:center;"
+                   style="width: 92px; text-align:center;"
                    value="${strokes !== '' ? strokes : ''}" />
           </td>
           <td class="center">
             <input type="number"
                    id="score-ld-${safeId}"
                    placeholder="yd"
-                   style="width: 80px; text-align:center;"
+                   style="width: 92px; text-align:center;"
                    step="0.1"
                    value="${ld !== '' ? ld : ''}" />
           </td>
@@ -1841,7 +1770,7 @@
             <input type="number"
                    id="score-ctp-ft-${safeId}"
                    placeholder="ft"
-                   style="width: 60px; text-align:center;"
+                   style="width: 74px; text-align:center;"
                    step="1"
                    value="${ctpFeet !== '' ? ctpFeet : ''}" />
           </td>
@@ -1849,7 +1778,7 @@
             <input type="number"
                    id="score-ctp-in-${safeId}"
                    placeholder="in"
-                   style="width: 60px; text-align:center;"
+                   style="width: 74px; text-align:center;"
                    step="1"
                    min="0"
                    max="11"
@@ -1863,65 +1792,58 @@
       `;
     }
 
-    tableHtml += '</tbody></table>';
+    tableHtml += '</tbody></table></div>';
     wrapper.innerHTML = tableHtml;
   }
 
   // ----- Rendering: Players & scoring -----
- function renderPlayersList() {
-  const list = document.getElementById('players-list');
-  const headerPlayersCount = document.getElementById('header-players-count');
-  headerPlayersCount.textContent = state.players.length;
+  function renderPlayersList() {
+    const list = document.getElementById('players-list');
+    const headerPlayersCount = document.getElementById('header-players-count');
+    headerPlayersCount.textContent = state.players.length;
 
-  if (!state.players.length) {
-    list.innerHTML = '<div class="empty-state">No players yet. Add your crew above.</div>';
-    return;
-  }
+    if (!state.players.length) {
+      list.innerHTML = '<div class="empty-state">No players yet. Add your crew above.</div>';
+      return;
+    }
 
-  let html = '';
-  for (const p of state.players) {
-    html += `
-      <span class="pill-tag">
-        ${p}
-        <button type="button" data-edit-player="${p}">Edit</button>
-        <button type="button" data-remove-player="${p}">×</button>
-      </span>
-    `;
-  }
-  list.innerHTML = html;
+    let html = '';
+    for (const p of state.players) {
+      html += `
+        <span class="pill-tag">
+          ${p}
+          <button type="button" data-edit-player="${p}">Edit</button>
+          <button type="button" data-remove-player="${p}">×</button>
+        </span>
+      `;
+    }
+    list.innerHTML = html;
 
-  // Remove player
-  list.querySelectorAll('[data-remove-player]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const name = btn.getAttribute('data-remove-player');
-      if (!confirm("Remove " + name + " from the league? Past results for them will stay (under their old name).")) {
-        return;
-      }
-      state.players = state.players.filter(p => p !== name);
-      saveState();
-      refreshAll();
+    list.querySelectorAll('[data-remove-player]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.getAttribute('data-remove-player');
+        if (!confirm("Remove " + name + " from the league? Past results for them will stay (under their old name).")) return;
+        state.players = state.players.filter(p => p !== name);
+        saveState();
+        refreshAll();
+      });
     });
-  });
 
-  // Edit player
-  list.querySelectorAll('[data-edit-player]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const oldName = btn.getAttribute('data-edit-player');
-      const newName = prompt('Edit player name:', oldName);
-      if (newName === null) return; // user hit cancel
-
-      const trimmed = newName.trim();
-      if (!trimmed) return;
-
-      if (trimmed !== oldName && state.players.includes(trimmed)) {
-        alert('That name already exists. Choose a different one.');
-        return;
-      }
-
-      renamePlayer(oldName, trimmed);
+    list.querySelectorAll('[data-edit-player]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const oldName = btn.getAttribute('data-edit-player');
+        const newName = prompt('Edit player name:', oldName);
+        if (newName === null) return;
+        const trimmed = newName.trim();
+        if (!trimmed) return;
+        if (trimmed !== oldName && state.players.includes(trimmed)) {
+          alert('That name already exists. Choose a different one.');
+          return;
+        }
+        renamePlayer(oldName, trimmed);
+      });
     });
-  });
-}
+  }
 
   function renderScoringSettings() {
     document.getElementById('score-1st').value = state.scoring.placementPoints[1] ?? '';
@@ -1945,10 +1867,7 @@
 
     const activeId = getActiveSeasonId();
 
-    select.innerHTML = state.seasons.map(s =>
-      `<option value="${s.id}">${s.name}</option>`
-    ).join('');
-
+    select.innerHTML = state.seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
     select.value = activeId;
   }
 
@@ -1963,40 +1882,32 @@
   function setupWeekForm() {
     const form = document.getElementById('week-form');
     const clearBtn = document.getElementById('clear-week-form-btn');
-    const hostSelect = document.getElementById('week-host');
     const submitBtn = form.querySelector('button[type="submit"]');
 
-    function refreshHosts() {
-      if (!state.players.length) {
-        hostSelect.innerHTML = '<option value="">Add players in Settings</option>';
-        hostSelect.disabled = true;
-        return;
-      }
-      hostSelect.disabled = false;
-      hostSelect.innerHTML = state.players.map(p => {
-        const escaped = p.replace(/"/g, '&quot;');
-        return `<option value="${escaped}">${escaped}</option>`;
-      }).join('');
-    }
-
-    refreshHosts();
+    // Initial populate (fixes host select on first load + mobile)
+    populateWeekHostSelect(null);
 
     clearBtn.addEventListener('click', () => {
-  form.reset();
-  const errorEl = document.getElementById('week-form-error');
-  errorEl.style.display = 'none';
-  errorEl.textContent = '';
+      form.reset();
+      const errorEl = document.getElementById('week-form-error');
+      errorEl.style.display = 'none';
+      errorEl.textContent = '';
 
-  editingWeekId = null;
-  if (submitBtn) submitBtn.textContent = 'Save week';
-});
+      editingWeekId = null;
+      if (submitBtn) submitBtn.textContent = 'Save week';
 
+      // Repopulate host dropdown after reset to avoid empty/disabled edge cases
+      populateWeekHostSelect(null);
+    });
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const errorEl = document.getElementById('week-form-error');
       errorEl.style.display = 'none';
       errorEl.textContent = '';
+
+      // Always sync host dropdown with current players BEFORE validating
+      populateWeekHostSelect(document.getElementById('week-host')?.value || null);
 
       if (!state.players.length) {
         errorEl.textContent = 'Add at least one player in Settings first (to choose a host).';
@@ -2011,8 +1922,9 @@
       const closestHole = document.getElementById('week-closest-hole').value.trim();
       const coursePhotoInput = document.getElementById('week-course-photo');
 
-      if (!date) {
-        errorEl.textContent = 'Week start date is required.';
+      // Date validation: consistent format (Edge/Chrome-safe)
+      if (!parseYYYYMMDD(date)) {
+        errorEl.textContent = 'Week start date is required (format: YYYY-MM-DD).';
         errorEl.style.display = 'block';
         return;
       }
@@ -2027,65 +1939,63 @@
         return;
       }
 
-       let coursePhoto = null;
-  if (coursePhotoInput && coursePhotoInput.files && coursePhotoInput.files[0]) {
-    try {
-      coursePhoto = await readFileAsDataURL(coursePhotoInput.files[0]);
-    } catch (err) {
-      console.error('Error reading course photo', err);
-      errorEl.textContent = 'Failed to read course photo. Try again or leave it blank.';
-      errorEl.style.display = 'block';
-      return;
-    }
-  }
-
-  const isEditing = !!editingWeekId;
-
-  if (isEditing) {
-    // Update existing week
-    const week = state.weeks.find(w => w.id === editingWeekId);
-    if (week) {
-      week.date = date;
-      week.course = course;
-      week.host = host;
-      week.longHole = longHole;
-      week.closestHole = closestHole;
-      // Only overwrite photo if a new one is chosen
-      if (coursePhoto !== null) {
-        week.coursePhoto = coursePhoto;
+      let coursePhoto = null;
+      if (coursePhotoInput && coursePhotoInput.files && coursePhotoInput.files[0]) {
+        try {
+          coursePhoto = await readFileAsDataURL(coursePhotoInput.files[0]);
+        } catch (err) {
+          console.error('Error reading course photo', err);
+          errorEl.textContent = 'Failed to read course photo. Try again or leave it blank.';
+          errorEl.style.display = 'block';
+          return;
+        }
       }
-    }
-  } else {
-    // Create new week
-    const newWeek = {
-      id: uid(),
-      seasonId: getActiveSeasonId(),
-      date,
-      course,
-      host,
-      longHole,
-      closestHole,
-      coursePhoto: coursePhoto,
-      longDriveWinner: null,
-      closestWinner: null,
-      results: []
-    };
-    state.weeks.push(newWeek);
-  }
 
-  saveState();
-  refreshAll();
+      const isEditing = !!editingWeekId;
 
-  form.reset();
-  editingWeekId = null;
-  if (submitBtn) submitBtn.textContent = 'Save week';
+      if (isEditing) {
+        const week = state.weeks.find(w => w.id === editingWeekId);
+        if (week) {
+          week.date = date;
+          week.course = course;
+          week.host = host;
+          week.longHole = longHole;
+          week.closestHole = closestHole;
+          if (coursePhoto !== null) week.coursePhoto = coursePhoto;
+        }
+      } else {
+        const newWeek = {
+          id: uid(),
+          seasonId: getActiveSeasonId(),
+          date,
+          course,
+          host,
+          longHole,
+          closestHole,
+          coursePhoto: coursePhoto,
+          longDriveWinner: null,
+          closestWinner: null,
+          results: []
+        };
+        state.weeks.push(newWeek);
+      }
 
-  alert(
-    isEditing
-      ? 'Week updated.'
-      : 'Week created for this season. Now go to "Enter / Update Scores" to log results.'
-  );
-});
+      saveState();
+      refreshAll();
+
+      form.reset();
+      editingWeekId = null;
+      if (submitBtn) submitBtn.textContent = 'Save week';
+
+      // Repopulate host dropdown after reset to keep it selectable on mobile
+      populateWeekHostSelect(null);
+
+      alert(
+        isEditing
+          ? 'Week updated.'
+          : 'Week created for this season. Now go to "Enter / Update Scores" to log results.'
+      );
+    });
   }
 
   // ----- Scores form handling -----
@@ -2274,13 +2184,15 @@
       state.players.push(name);
       saveState();
       newPlayerInput.value = '';
+
+      // Immediately refresh host dropdown (fixes mobile host selection bug)
+      populateWeekHostSelect(null);
+
       refreshAll();
     });
 
     newPlayerInput.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') {
-        addPlayerBtn.click();
-      }
+      if (e.key === 'Enter') addPlayerBtn.click();
     });
 
     // Scoring
@@ -2379,9 +2291,10 @@
     renderSeasonControls();
     renderPlayersList();
     renderScoringSettings();
-    if (setupWeekForm.refreshHosts) {
-      setupWeekForm.refreshHosts();
-    }
+
+    // Always keep host select in sync (fixes your mobile host bug)
+    populateWeekHostSelect(document.getElementById('week-host')?.value || null);
+
     renderWeeksList();
     renderLeaderboard();
     renderScoresSection();
@@ -2400,11 +2313,4 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
